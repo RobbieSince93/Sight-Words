@@ -126,6 +126,111 @@
     box-shadow: 0 3px 0 var(--pink-deep);
   }
 
+  .subject-switcher{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:center;
+    margin-bottom: 20px;
+  }
+  .subject-pill{
+    border: 2px solid var(--lavender);
+    background:#fff;
+    color: var(--ink);
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    font-size:14px;
+    padding:10px 16px;
+    border-radius:999px;
+    cursor:pointer;
+  }
+  .subject-pill.active{
+    background: linear-gradient(135deg, var(--lavender), var(--sky));
+    color:#fff;
+    border-color:transparent;
+    box-shadow: 0 3px 0 var(--sky-deep);
+  }
+
+  .letter-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    gap:10px;
+    width:100%;
+    max-width: 480px;
+  }
+  .letter-card{
+    aspect-ratio: 1;
+    border-radius:14px;
+    border:none;
+    background: linear-gradient(160deg, var(--pink), var(--lavender));
+    color:#fff;
+    font-family:'Baloo 2', sans-serif;
+    font-weight:800;
+    font-size:24px;
+    cursor:pointer;
+    box-shadow: 0 3px 0 var(--pink-deep);
+  }
+
+  .number-grid{
+    display:grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap:6px;
+    width:100%;
+    max-width: 480px;
+  }
+  .number-cell{
+    aspect-ratio:1;
+    border-radius:8px;
+    border:none;
+    background:#fff;
+    color: var(--pink-deep);
+    font-weight:700;
+    font-size:13px;
+    cursor:pointer;
+    border: 1px solid #ffe1f0;
+  }
+  .number-cell.tens{ background: var(--butter); color:#7a5a12; }
+  .number-cell.lit{ background: var(--pink-deep); color:#fff; transform:scale(1.1); }
+
+  .moreless-row{
+    display:flex;
+    justify-content:center;
+    gap: 30px;
+    width:100%;
+  }
+  .moreless-group{
+    flex:1;
+    max-width: 150px;
+    min-height:110px;
+    border-radius:16px;
+    border: 3px solid var(--pink);
+    background:#fff;
+    display:flex;
+    flex-wrap:wrap;
+    align-content:center;
+    justify-content:center;
+    gap:6px;
+    padding:10px;
+    cursor:pointer;
+    font-size:26px;
+  }
+  .moreless-group.correct{ background: var(--mint); border-color:#4fae7f; }
+  .moreless-group.wrong{ background:#ffd4dc; border-color:var(--pink-deep); }
+
+  .shape-icon, .icon-emoji{
+    font-size:80px;
+    margin-top: 30px;
+    position:relative; z-index:1;
+  }
+
+  .pattern-row{
+    display:flex;
+    gap:10px;
+    font-size:34px;
+    justify-content:center;
+    flex-wrap:wrap;
+  }
+
   .build-card{
     width:100%;
     max-width: 400px;
@@ -594,7 +699,18 @@
 <body>
 <div class="sparkle-layer" id="sparkleLayer"></div>
 <div class="stage">
-  <h1>Sight Word Cards</h1>
+  <h1>Kindergarten Learning Hub</h1>
+  <div class="sub" id="topSubtitle">Pick a subject to practice</div>
+
+  <div class="subject-switcher" id="subjectSwitcher">
+    <button class="subject-pill active" data-subject="reading">📖 Sight Words</button>
+    <button class="subject-pill" data-subject="phonics">🔤 Phonics</button>
+    <button class="subject-pill" data-subject="math">🔢 Math</button>
+    <button class="subject-pill" data-subject="science">🔬 Science</button>
+    <button class="subject-pill" data-subject="world">🌍 World</button>
+  </div>
+
+  <div id="subjectReading">
   <div class="sub" id="subtitle">Tap a card to hear it spelled out</div>
 
   <div class="mode-switcher" id="modeSwitcher">
@@ -673,8 +789,133 @@
     <div class="rec-grid" id="wordRecGrid"></div>
     <button class="done-btn" id="doneBtn">Done recording</button>
   </div>
+  </div><!-- /subjectReading -->
 
-  <footer>Made for practicing 1R and 2R word lists</footer>
+  <div id="subjectPhonics" style="display:none;">
+    <div class="sub">Tap a letter to hear it, or blend a word</div>
+    <div class="mode-switcher" id="phonicsSwitcher">
+      <button class="mode-pill active" data-pmode="abc">🔤 ABCs</button>
+      <button class="mode-pill" data-pmode="blend">🧩 Blend & Read</button>
+    </div>
+    <div id="abcView">
+      <div class="mode-switcher" id="caseSwitcher">
+        <button class="mode-pill active" data-case="upper">ABC</button>
+        <button class="mode-pill" data-case="lower">abc</button>
+      </div>
+      <div class="letter-grid" id="letterGrid"></div>
+    </div>
+    <div id="blendView" style="display:none;">
+      <div class="build-card">
+        <div class="whole-word" style="color:var(--pink-deep);" id="blendWord">cat</div>
+        <div class="letters" id="blendLetters"></div>
+        <button class="hear-btn" id="blendHearBtn">🔊 Sound it out</button>
+      </div>
+      <div class="nav-row">
+        <button class="nav-btn" id="blendPrevBtn" aria-label="Previous word">&#8592;</button>
+        <div class="dots" id="blendDots"></div>
+        <button class="nav-btn" id="blendNextBtn" aria-label="Next word">&#8594;</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="subjectMath" style="display:none;">
+    <div class="sub">Tap a topic to practice</div>
+    <div class="mode-switcher" id="mathSwitcher">
+      <button class="mode-pill active" data-mmode="count">🔢 Counting</button>
+      <button class="mode-pill" data-mmode="moreless">⚖️ More/Less</button>
+      <button class="mode-pill" data-mmode="shapes">🔺 Shapes</button>
+      <button class="mode-pill" data-mmode="patterns">🔁 Patterns</button>
+      <button class="mode-pill" data-mmode="addsub">➕ Add/Subtract</button>
+    </div>
+
+    <div id="countView">
+      <div class="mode-switcher">
+        <button class="mode-pill active" data-countby="1" id="countBy1Btn">Count by 1s</button>
+        <button class="mode-pill" data-countby="10" id="countBy10Btn">Count by 10s</button>
+      </div>
+      <div class="number-grid" id="numberGrid"></div>
+    </div>
+
+    <div id="morelessView" style="display:none;">
+      <div class="build-card">
+        <div class="build-feedback" id="morelessPrompt">Which group has more?</div>
+        <div class="moreless-row" id="morelessRow"></div>
+      </div>
+      <button class="mode-btn" id="morelessNextBtn">New groups</button>
+    </div>
+
+    <div id="shapesView" style="display:none;">
+      <div class="card-wrap" style="height:340px;">
+        <div class="card" id="shapeCard" style="background: linear-gradient(165deg, var(--sky) 0%, var(--mint) 100%);">
+          <div class="shape-icon" id="shapeIcon"></div>
+          <div class="whole-word" style="color:#fff;" id="shapeName">circle</div>
+          <div class="tap-hint"><span>Tap to hear it</span></div>
+        </div>
+      </div>
+      <div class="nav-row">
+        <button class="nav-btn" id="shapePrevBtn" aria-label="Previous shape">&#8592;</button>
+        <div class="dots" id="shapeDots"></div>
+        <button class="nav-btn" id="shapeNextBtn" aria-label="Next shape">&#8594;</button>
+      </div>
+    </div>
+
+    <div id="patternsView" style="display:none;">
+      <div class="build-card">
+        <div class="pattern-row" id="patternRow"></div>
+        <div class="build-feedback" id="patternFeedback">What comes next?</div>
+        <div class="quiz-grid" id="patternOptions"></div>
+      </div>
+      <button class="mode-btn" id="patternNextBtn">New pattern</button>
+    </div>
+
+    <div id="addsubView" style="display:none;">
+      <div class="build-card">
+        <div class="whole-word" style="color:var(--pink-deep); font-size:32px;" id="addsubProblem">3 + 2 = ?</div>
+        <div class="moreless-row" id="addsubDots"></div>
+        <div class="quiz-grid" id="addsubOptions"></div>
+        <div class="build-feedback" id="addsubFeedback"></div>
+      </div>
+      <button class="mode-btn" id="addsubNextBtn">New problem</button>
+    </div>
+  </div>
+
+  <div id="subjectScience" style="display:none;">
+    <div class="sub">Tap a card to hear about it</div>
+    <div class="mode-switcher" id="scienceSwitcher">
+      <button class="mode-pill active" data-smode="senses">👀 Five Senses</button>
+      <button class="mode-pill" data-smode="weather">☀️ Weather & Seasons</button>
+    </div>
+    <div class="card-wrap" style="height:300px;">
+      <div class="card" id="scienceCard" style="background: linear-gradient(165deg, var(--mint) 0%, var(--sky) 100%);">
+        <div class="shape-icon" id="scienceIcon"></div>
+        <div class="whole-word" style="color:#fff; font-size:32px;" id="scienceName">sight</div>
+        <div class="tap-hint"><span>Tap to hear it</span></div>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="nav-btn" id="sciencePrevBtn" aria-label="Previous">&#8592;</button>
+      <div class="dots" id="scienceDots"></div>
+      <button class="nav-btn" id="scienceNextBtn" aria-label="Next">&#8594;</button>
+    </div>
+  </div>
+
+  <div id="subjectWorld" style="display:none;">
+    <div class="sub">Community helpers — tap to hear about them</div>
+    <div class="card-wrap" style="height:300px;">
+      <div class="card" id="worldCard" style="background: linear-gradient(165deg, var(--lavender) 0%, var(--pink) 100%);">
+        <div class="shape-icon" id="worldIcon"></div>
+        <div class="whole-word" style="color:#fff; font-size:28px;" id="worldName">doctor</div>
+        <div class="tap-hint"><span>Tap to hear it</span></div>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="nav-btn" id="worldPrevBtn" aria-label="Previous">&#8592;</button>
+      <div class="dots" id="worldDots"></div>
+      <button class="nav-btn" id="worldNextBtn" aria-label="Next">&#8594;</button>
+    </div>
+  </div>
+
+  <footer>Made for kindergarten prep — reading, phonics, math, science &amp; world</footer>
 </div>
 
 <script>
@@ -1376,6 +1617,423 @@ toggleModeBtn.onclick = () => {
 };
 doneBtn.onclick = () => toggleModeBtn.click();
 
+/* =========================================================
+   SUBJECT SWITCHER
+   ========================================================= */
+const subjectPanels = {
+  reading: document.getElementById('subjectReading'),
+  phonics: document.getElementById('subjectPhonics'),
+  math: document.getElementById('subjectMath'),
+  science: document.getElementById('subjectScience'),
+  world: document.getElementById('subjectWorld')
+};
+let currentSubject = 'reading';
+function setSubject(subject){
+  currentSubject = subject;
+  Object.keys(subjectPanels).forEach(key => {
+    subjectPanels[key].style.display = key === subject ? 'block' : 'none';
+  });
+  document.querySelectorAll('.subject-pill').forEach(p => p.classList.toggle('active', p.dataset.subject === subject));
+  if(subject === 'phonics') initPhonics();
+  if(subject === 'math') initMath();
+  if(subject === 'science') initScience();
+  if(subject === 'world') initWorld();
+}
+document.querySelectorAll('.subject-pill').forEach(p => {
+  p.onclick = () => setSubject(p.dataset.subject);
+});
+
+/* =========================================================
+   PHONICS: ABC flashcards + Blend & Read
+   ========================================================= */
+const ALPHABET = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'];
+let abcCase = 'upper';
+let phonicsInited = false;
+
+function buildLetterGrid(){
+  const grid = document.getElementById('letterGrid');
+  grid.innerHTML = '';
+  ALPHABET.forEach(l => {
+    const display = abcCase === 'upper' ? l.toUpperCase() : l;
+    const btn = document.createElement('button');
+    btn.className = 'letter-card';
+    btn.textContent = display;
+    btn.onclick = () => speakSynth(l, 0.8);
+    grid.appendChild(btn);
+  });
+}
+
+document.getElementById('caseSwitcher').querySelectorAll('.mode-pill').forEach(p => {
+  p.onclick = () => {
+    abcCase = p.dataset.case;
+    document.getElementById('caseSwitcher').querySelectorAll('.mode-pill').forEach(x => x.classList.toggle('active', x === p));
+    buildLetterGrid();
+  };
+});
+
+const CVC_WORDS = ['cat','dog','sun','hat','pig','bed','cup','hop','run','mom','dad','box','fan','log','red','big','top','wet','yes','ten'];
+let blendIndex = 0;
+
+function renderBlendWord(){
+  const word = CVC_WORDS[blendIndex];
+  document.getElementById('blendWord').textContent = word;
+  const lettersEl2 = document.getElementById('blendLetters');
+  lettersEl2.innerHTML = '';
+  word.split('').forEach(ch => {
+    const tile = document.createElement('div');
+    tile.className = 'letter-tile';
+    tile.textContent = ch;
+    lettersEl2.appendChild(tile);
+  });
+  const dotsRow = document.getElementById('blendDots');
+  dotsRow.innerHTML = '';
+  CVC_WORDS.forEach((w, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === blendIndex ? ' current' : '');
+    d.onclick = () => { blendIndex = i; renderBlendWord(); };
+    dotsRow.appendChild(d);
+  });
+}
+
+async function playBlend(){
+  const word = CVC_WORDS[blendIndex];
+  const tiles = document.getElementById('blendLetters').querySelectorAll('.letter-tile');
+  window.speechSynthesis.cancel();
+  for(let i = 0; i < word.length; i++){
+    tiles.forEach(t => t.classList.remove('lit'));
+    tiles[i].classList.add('lit');
+    await speakSynth(word[i], 0.75);
+    await new Promise(r => setTimeout(r, 80));
+  }
+  tiles.forEach(t => t.classList.remove('lit'));
+  await speakSynth(word, 0.85);
+}
+
+document.getElementById('blendHearBtn').onclick = playBlend;
+document.getElementById('blendPrevBtn').onclick = () => { blendIndex = (blendIndex - 1 + CVC_WORDS.length) % CVC_WORDS.length; renderBlendWord(); };
+document.getElementById('blendNextBtn').onclick = () => { blendIndex = (blendIndex + 1) % CVC_WORDS.length; renderBlendWord(); };
+
+document.getElementById('phonicsSwitcher').querySelectorAll('.mode-pill').forEach(p => {
+  p.onclick = () => {
+    document.getElementById('phonicsSwitcher').querySelectorAll('.mode-pill').forEach(x => x.classList.toggle('active', x === p));
+    document.getElementById('abcView').style.display = p.dataset.pmode === 'abc' ? 'block' : 'none';
+    document.getElementById('blendView').style.display = p.dataset.pmode === 'blend' ? 'block' : 'none';
+  };
+});
+
+function initPhonics(){
+  if(phonicsInited) return;
+  phonicsInited = true;
+  buildLetterGrid();
+  renderBlendWord();
+}
+
+/* =========================================================
+   MATH: Counting, More/Less, Shapes, Patterns, Add/Subtract
+   ========================================================= */
+let mathInited = false;
+let countBy = 1;
+
+function buildNumberGrid(){
+  const grid = document.getElementById('numberGrid');
+  grid.innerHTML = '';
+  for(let n = 1; n <= 100; n++){
+    const cell = document.createElement('button');
+    cell.className = 'number-cell' + (n % 10 === 0 ? ' tens' : '');
+    cell.textContent = n;
+    cell.dataset.n = n;
+    cell.onclick = () => speakSynth(String(n), 0.9);
+    grid.appendChild(cell);
+  }
+}
+
+async function playCounting(){
+  const cells = document.querySelectorAll('#numberGrid .number-cell');
+  window.speechSynthesis.cancel();
+  const step = countBy;
+  for(let n = step; n <= 100; n += step){
+    cells.forEach(c => c.classList.remove('lit'));
+    const cell = document.querySelector('#numberGrid .number-cell[data-n="' + n + '"]');
+    if(cell) cell.classList.add('lit');
+    await speakSynth(String(n), 1.05);
+  }
+  cells.forEach(c => c.classList.remove('lit'));
+}
+
+document.getElementById('countBy1Btn').onclick = (e) => {
+  countBy = 1;
+  document.querySelectorAll('#countView .mode-pill').forEach(p => p.classList.remove('active'));
+  e.target.classList.add('active');
+  playCounting();
+};
+document.getElementById('countBy10Btn').onclick = (e) => {
+  countBy = 10;
+  document.querySelectorAll('#countView .mode-pill').forEach(p => p.classList.remove('active'));
+  e.target.classList.add('active');
+  playCounting();
+};
+
+function randInt(min, max){ return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+function loadMoreLess(){
+  const a = randInt(1, 9);
+  let b = randInt(1, 9);
+  while(b === a) b = randInt(1, 9);
+  const askMore = Math.random() < 0.5;
+  document.getElementById('morelessPrompt').textContent = askMore ? 'Which group has more?' : 'Which group has fewer?';
+  const row = document.getElementById('morelessRow');
+  row.innerHTML = '';
+  [a, b].forEach(count => {
+    const group = document.createElement('div');
+    group.className = 'moreless-group';
+    group.textContent = '⭐'.repeat(count);
+    group.onclick = () => {
+      const isCorrect = askMore ? count === Math.max(a,b) : count === Math.min(a,b);
+      group.classList.add(isCorrect ? 'correct' : 'wrong');
+      speakSynth(isCorrect ? 'Yes! Great job!' : 'Try the other one', 1);
+      row.querySelectorAll('.moreless-group').forEach(g => g.onclick = null);
+    };
+    row.appendChild(group);
+  });
+}
+document.getElementById('morelessNextBtn').onclick = loadMoreLess;
+
+const SHAPES = [
+  {name:'circle', icon:'⚪'}, {name:'square', icon:'⬛'}, {name:'triangle', icon:'🔺'},
+  {name:'rectangle', icon:'▬'}, {name:'oval', icon:'🥚'}, {name:'star', icon:'⭐'},
+  {name:'diamond', icon:'🔶'}, {name:'hexagon', icon:'⬡'},
+  {name:'cube', icon:'🧊'}, {name:'sphere', icon:'🔴'}, {name:'cone', icon:'🍦'}, {name:'cylinder', icon:'🥫'}
+];
+let shapeIndex = 0;
+function renderShape(){
+  const s = SHAPES[shapeIndex];
+  document.getElementById('shapeIcon').textContent = s.icon;
+  document.getElementById('shapeName').textContent = s.name;
+  const dotsRow = document.getElementById('shapeDots');
+  dotsRow.innerHTML = '';
+  SHAPES.forEach((sh, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === shapeIndex ? ' current' : '');
+    d.onclick = () => { shapeIndex = i; renderShape(); };
+    dotsRow.appendChild(d);
+  });
+}
+document.getElementById('shapeCard').onclick = () => speakSynth(SHAPES[shapeIndex].name, 0.9);
+document.getElementById('shapePrevBtn').onclick = () => { shapeIndex = (shapeIndex - 1 + SHAPES.length) % SHAPES.length; renderShape(); };
+document.getElementById('shapeNextBtn').onclick = () => { shapeIndex = (shapeIndex + 1) % SHAPES.length; renderShape(); };
+
+const PATTERN_ITEMS = ['🔴','🔵','🟡','🟢'];
+let currentPattern = [];
+let patternAnswer = '';
+function loadPattern(){
+  const isABC = Math.random() < 0.5;
+  const chosen = shuffleArr(PATTERN_ITEMS).slice(0, isABC ? 3 : 2);
+  const seq = [];
+  for(let i = 0; i < 6; i++) seq.push(chosen[i % chosen.length]);
+  patternAnswer = chosen[6 % chosen.length];
+  currentPattern = seq;
+  document.getElementById('patternRow').textContent = seq.join(' ') + ' ?';
+  document.getElementById('patternFeedback').textContent = 'What comes next?';
+  const distractors = shuffleArr(PATTERN_ITEMS.filter(x => x !== patternAnswer)).slice(0, 2);
+  const options = shuffleArr([patternAnswer, ...distractors]);
+  const optRow = document.getElementById('patternOptions');
+  optRow.innerHTML = '';
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-option';
+    btn.textContent = opt;
+    btn.style.fontSize = '30px';
+    btn.onclick = () => {
+      const feedback = document.getElementById('patternFeedback');
+      if(opt === patternAnswer){
+        feedback.textContent = 'Yes! 🌟';
+        feedback.style.color = '#4fae7f';
+        speakSynth('Yes! Great job!', 1);
+      }else{
+        feedback.textContent = 'Not quite, try the next one!';
+        feedback.style.color = '#c14a63';
+      }
+      optRow.querySelectorAll('.quiz-option').forEach(b => b.disabled = true);
+    };
+    optRow.appendChild(btn);
+  });
+}
+document.getElementById('patternNextBtn').onclick = loadPattern;
+
+let addsubA = 0, addsubB = 0, addsubIsAdd = true, addsubAnswer = 0;
+function loadAddSub(){
+  addsubIsAdd = Math.random() < 0.6;
+  if(addsubIsAdd){
+    addsubA = randInt(0, 5);
+    addsubB = randInt(0, 5 - Math.max(0, addsubA - 5));
+    if(addsubA + addsubB > 10) addsubB = 10 - addsubA;
+    addsubAnswer = addsubA + addsubB;
+  }else{
+    addsubA = randInt(2, 10);
+    addsubB = randInt(0, addsubA);
+    addsubAnswer = addsubA - addsubB;
+  }
+  document.getElementById('addsubProblem').textContent = addsubA + (addsubIsAdd ? ' + ' : ' - ') + addsubB + ' = ?';
+  document.getElementById('addsubDots').innerHTML =
+    '<div class="moreless-group" style="cursor:default;">' + '⭐'.repeat(addsubA) + '</div>' +
+    (addsubIsAdd
+      ? '<div class="moreless-group" style="cursor:default;">' + '⭐'.repeat(addsubB) + '</div>'
+      : '');
+  document.getElementById('addsubFeedback').textContent = '';
+
+  const distractorSet = new Set();
+  while(distractorSet.size < 3){
+    const d = randInt(0, 10);
+    if(d !== addsubAnswer) distractorSet.add(d);
+  }
+  const options = shuffleArr([addsubAnswer, ...distractorSet]);
+  const optRow = document.getElementById('addsubOptions');
+  optRow.innerHTML = '';
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-option';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      const feedback = document.getElementById('addsubFeedback');
+      if(opt === addsubAnswer){
+        feedback.textContent = 'Yes! 🌟';
+        feedback.style.color = '#4fae7f';
+        speakSynth('Yes! Great job!', 1);
+      }else{
+        feedback.textContent = 'Try again — count the stars!';
+        feedback.style.color = '#c14a63';
+      }
+      optRow.querySelectorAll('.quiz-option').forEach(b => b.disabled = true);
+    };
+    optRow.appendChild(btn);
+  });
+}
+document.getElementById('addsubNextBtn').onclick = loadAddSub;
+
+document.getElementById('mathSwitcher').querySelectorAll('.mode-pill').forEach(p => {
+  p.onclick = () => {
+    document.getElementById('mathSwitcher').querySelectorAll('.mode-pill').forEach(x => x.classList.toggle('active', x === p));
+    const mode = p.dataset.mmode;
+    document.getElementById('countView').style.display = mode === 'count' ? 'block' : 'none';
+    document.getElementById('morelessView').style.display = mode === 'moreless' ? 'block' : 'none';
+    document.getElementById('shapesView').style.display = mode === 'shapes' ? 'block' : 'none';
+    document.getElementById('patternsView').style.display = mode === 'patterns' ? 'block' : 'none';
+    document.getElementById('addsubView').style.display = mode === 'addsub' ? 'block' : 'none';
+    if(mode === 'moreless') loadMoreLess();
+    if(mode === 'shapes') renderShape();
+    if(mode === 'patterns') loadPattern();
+    if(mode === 'addsub') loadAddSub();
+  };
+});
+
+function initMath(){
+  if(mathInited) return;
+  mathInited = true;
+  buildNumberGrid();
+  loadMoreLess();
+  renderShape();
+  loadPattern();
+  loadAddSub();
+}
+
+/* =========================================================
+   SCIENCE: Five Senses, Weather & Seasons
+   ========================================================= */
+const SENSES = [
+  {name:'sight', icon:'👀', blurb:'You see with your eyes'},
+  {name:'hearing', icon:'👂', blurb:'You hear with your ears'},
+  {name:'smell', icon:'👃', blurb:'You smell with your nose'},
+  {name:'taste', icon:'👅', blurb:'You taste with your tongue'},
+  {name:'touch', icon:'✋', blurb:'You touch with your hands and skin'}
+];
+const WEATHER = [
+  {name:'sunny', icon:'☀️', blurb:'A bright day with sunshine'},
+  {name:'rainy', icon:'🌧️', blurb:'Water falls from the clouds'},
+  {name:'snowy', icon:'❄️', blurb:'Cold and snowy outside'},
+  {name:'windy', icon:'🌬️', blurb:'The air is blowing around'},
+  {name:'spring', icon:'🌷', blurb:'Flowers bloom and it gets warmer'},
+  {name:'summer', icon:'🌞', blurb:'The hottest season'},
+  {name:'fall', icon:'🍂', blurb:'Leaves change color and fall'},
+  {name:'winter', icon:'⛄', blurb:'The coldest season'}
+];
+let scienceList = SENSES;
+let scienceIndex = 0;
+
+function renderScience(){
+  const item = scienceList[scienceIndex];
+  document.getElementById('scienceIcon').textContent = item.icon;
+  document.getElementById('scienceName').textContent = item.name;
+  const dotsRow = document.getElementById('scienceDots');
+  dotsRow.innerHTML = '';
+  scienceList.forEach((s, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === scienceIndex ? ' current' : '');
+    d.onclick = () => { scienceIndex = i; renderScience(); };
+    dotsRow.appendChild(d);
+  });
+}
+document.getElementById('scienceCard').onclick = () => {
+  const item = scienceList[scienceIndex];
+  speakSynth(item.name + '. ' + item.blurb, 0.95);
+};
+document.getElementById('sciencePrevBtn').onclick = () => { scienceIndex = (scienceIndex - 1 + scienceList.length) % scienceList.length; renderScience(); };
+document.getElementById('scienceNextBtn').onclick = () => { scienceIndex = (scienceIndex + 1) % scienceList.length; renderScience(); };
+
+document.getElementById('scienceSwitcher').querySelectorAll('.mode-pill').forEach(p => {
+  p.onclick = () => {
+    document.getElementById('scienceSwitcher').querySelectorAll('.mode-pill').forEach(x => x.classList.toggle('active', x === p));
+    scienceList = p.dataset.smode === 'senses' ? SENSES : WEATHER;
+    scienceIndex = 0;
+    renderScience();
+  };
+});
+
+function initScience(){
+  scienceList = SENSES;
+  scienceIndex = 0;
+  renderScience();
+}
+
+/* =========================================================
+   WORLD: Community Helpers
+   ========================================================= */
+const HELPERS = [
+  {name:'doctor', icon:'🩺', blurb:'Helps you stay healthy and takes care of you when you are sick'},
+  {name:'teacher', icon:'🍎', blurb:'Helps you learn new things at school'},
+  {name:'police officer', icon:'👮', blurb:'Keeps our community safe'},
+  {name:'firefighter', icon:'🚒', blurb:'Puts out fires and helps in emergencies'},
+  {name:'mail carrier', icon:'📬', blurb:'Delivers letters and packages'},
+  {name:'farmer', icon:'🚜', blurb:'Grows food for everyone to eat'},
+  {name:'dentist', icon:'🦷', blurb:'Helps keep your teeth healthy'},
+  {name:'librarian', icon:'📚', blurb:'Helps you find books at the library'}
+];
+let worldIndex = 0;
+function renderWorld(){
+  const item = HELPERS[worldIndex];
+  document.getElementById('worldIcon').textContent = item.icon;
+  document.getElementById('worldName').textContent = item.name;
+  const dotsRow = document.getElementById('worldDots');
+  dotsRow.innerHTML = '';
+  HELPERS.forEach((h, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === worldIndex ? ' current' : '');
+    d.onclick = () => { worldIndex = i; renderWorld(); };
+    dotsRow.appendChild(d);
+  });
+}
+document.getElementById('worldCard').onclick = () => {
+  const item = HELPERS[worldIndex];
+  speakSynth(item.name + '. ' + item.blurb, 0.95);
+};
+document.getElementById('worldPrevBtn').onclick = () => { worldIndex = (worldIndex - 1 + HELPERS.length) % HELPERS.length; renderWorld(); };
+document.getElementById('worldNextBtn').onclick = () => { worldIndex = (worldIndex + 1) % HELPERS.length; renderWorld(); };
+
+function initWorld(){
+  worldIndex = 0;
+  renderWorld();
+}
+
+setSubject('reading');
 setMode('practice');
 </script>
 </body>
