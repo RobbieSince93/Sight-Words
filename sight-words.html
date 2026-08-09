@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Sight Word Flashcards</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pink: #FF9EC4;
+    --pink-deep: #E86FA6;
+    --sky: #8FD9FF;
+    --sky-deep: #5CBBEB;
+    --lavender: #C9AFFF;
+    --butter: #FFE28A;
+    --butter-deep: #F0BF3C;
+    --mint: #A8F0D2;
+    --cream: #FFF6FA;
+    --ink: #5B3A52;
+  }
+  *{ box-sizing:border-box; }
+  html,body{
+    margin:0; padding:0; min-height:100vh;
+    background:
+      radial-gradient(circle at 10% 8%, rgba(255,255,255,.9) 0%, transparent 30%),
+      radial-gradient(circle at 90% 15%, rgba(255,255,255,.7) 0%, transparent 25%),
+      radial-gradient(circle at 20% 85%, rgba(255,255,255,.6) 0%, transparent 30%),
+      linear-gradient(180deg, #BEE9FF 0%, #E7F6FF 35%, #FFF0F7 70%, #FFE9F4 100%);
+    font-family:'Nunito', sans-serif;
+    color: var(--ink);
+    overflow-x:hidden;
+    position:relative;
+  }
+
+  /* floating decorations */
+  .sparkle-layer{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:0;
+    overflow:hidden;
+  }
+  .floaty{
+    position:absolute;
+    opacity:.55;
+    animation: drift 14s ease-in-out infinite;
+    filter: drop-shadow(0 2px 4px rgba(255,255,255,.6));
+  }
+  @keyframes drift{
+    0%   { transform: translateY(0) rotate(0deg); }
+    50%  { transform: translateY(-26px) rotate(8deg); }
+    100% { transform: translateY(0) rotate(0deg); }
+  }
+  @keyframes twinkle{
+    0%,100%{ opacity:.25; transform:scale(1); }
+    50%{ opacity:.9; transform:scale(1.25); }
+  }
+
+  .stage{
+    max-width: 620px;
+    margin: 0 auto;
+    padding: 22px 18px 60px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    position:relative;
+    z-index:1;
+  }
+  h1{
+    font-family:'Baloo 2', sans-serif;
+    font-weight:800;
+    font-size: clamp(28px, 6vw, 42px);
+    margin: 4px 0 2px;
+    letter-spacing: -0.5px;
+    text-align:center;
+    background: linear-gradient(90deg, var(--pink-deep), var(--lavender), var(--sky-deep));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .sub{
+    font-weight:700;
+    color:#9b6f8f;
+    margin-bottom: 14px;
+    text-align:center;
+    font-size:15px;
+  }
+  .mode-btn{
+    border:none;
+    background: linear-gradient(135deg, var(--lavender), var(--pink));
+    color:#fff;
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    font-size:14px;
+    padding:11px 20px;
+    border-radius:999px;
+    cursor:pointer;
+    box-shadow: 0 4px 0 var(--pink-deep);
+    margin-bottom: 22px;
+  }
+  .mode-btn:active{ transform: translateY(3px); box-shadow:none; }
+
+  .tabs{
+    display:flex;
+    gap:16px;
+    margin-bottom: 26px;
+  }
+  .tab{
+    position:relative;
+    width:64px; height:64px;
+    border-radius:50%;
+    background: #fff;
+    color: var(--pink-deep);
+    border: 3px solid var(--pink);
+    font-family:'Baloo 2', sans-serif;
+    font-weight:800;
+    font-size:19px;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 4px 0 rgba(232,111,166,.35), 0 6px 14px rgba(255,158,196,.25);
+    transition: transform .12s ease;
+  }
+  .tab.active{
+    color:#fff;
+    background: linear-gradient(135deg, var(--pink), var(--lavender));
+    border-color: transparent;
+    box-shadow: 0 4px 0 var(--pink-deep), 0 6px 16px rgba(232,111,166,.4);
+  }
+  .tab:active{ transform: translateY(3px); box-shadow:none; }
+
+  .card-wrap{
+    perspective: 1400px;
+    width: 100%;
+    max-width: 340px;
+    height: 440px;
+    margin-bottom: 22px;
+  }
+  .card{
+    width:100%; height:100%;
+    border-radius: 34px;
+    background: linear-gradient(165deg, var(--pink) 0%, var(--lavender) 55%, var(--sky) 100%);
+    box-shadow: 0 18px 0 -6px rgba(255,158,196,.25), 0 24px 44px rgba(200,140,200,.35);
+    display:flex; flex-direction:column; align-items:center;
+    padding: 30px 18px 22px;
+    position:relative;
+    cursor:pointer;
+    transition: transform .08s ease;
+    overflow: hidden;
+  }
+  .card::before{
+    content:"";
+    position:absolute;
+    top:-40px; right:-40px;
+    width:140px; height:140px;
+    background: radial-gradient(circle, rgba(255,255,255,.55) 0%, transparent 70%);
+    border-radius:50%;
+  }
+  .card::after{
+    content:"";
+    position:absolute;
+    bottom:-50px; left:-30px;
+    width:160px; height:160px;
+    background: radial-gradient(circle, rgba(255,255,255,.35) 0%, transparent 70%);
+    border-radius:50%;
+  }
+  .card:active{ transform: scale(.98); }
+  .badge{
+    position:absolute;
+    top:-18px;
+    width:60px; height:60px;
+    border-radius:50%;
+    background: #fff;
+    color: var(--pink-deep);
+    font-family:'Baloo 2', sans-serif;
+    font-weight:800;
+    font-size:16px;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 4px 0 rgba(232,111,166,.4);
+    border: 3px solid var(--butter);
+  }
+  .letters{
+    display:flex;
+    gap:10px;
+    margin-top: 48px;
+    flex-wrap: wrap;
+    justify-content:center;
+    min-height: 90px;
+    position:relative;
+    z-index:1;
+  }
+  .letter-tile{
+    width: 58px; height: 70px;
+    background: #fff;
+    border-radius: 18px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    font-size: 32px;
+    color: var(--pink-deep);
+    box-shadow: 0 4px 0 #f0c9dc;
+    transition: transform .18s ease, background .18s ease, color .18s ease, box-shadow .18s ease;
+  }
+  .letter-tile.lit{
+    background: var(--butter);
+    color: #7a5a12;
+    transform: translateY(-6px) scale(1.1) rotate(-3deg);
+    box-shadow: 0 4px 0 var(--butter-deep);
+  }
+  .makes-line{
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    color: rgba(255,255,255,.6);
+    font-size: 20px;
+    margin-top: 22px;
+    letter-spacing: 1px;
+    transition: color .2s ease;
+    position:relative; z-index:1;
+  }
+  .makes-line.lit{ color:#fff; }
+  .whole-word{
+    font-family:'Baloo 2', sans-serif;
+    font-weight:800;
+    font-size: 46px;
+    color: rgba(255,255,255,.4);
+    margin-top: 4px;
+    transition: color .2s ease, transform .2s ease;
+    position:relative; z-index:1;
+  }
+  .whole-word.lit{ color:#fff; transform: scale(1.08); }
+  .tap-hint{
+    margin-top:auto;
+    color: rgba(255,255,255,.9);
+    font-size:13px;
+    font-weight:700;
+    display:flex; align-items:center; gap:6px;
+    position:relative; z-index:1;
+  }
+  .tap-hint svg{ width:16px; height:16px; }
+
+  .nav-row{
+    display:flex;
+    align-items:center;
+    gap: 22px;
+  }
+  .nav-btn{
+    width:52px; height:52px;
+    border-radius:50%;
+    border:none;
+    background: linear-gradient(135deg, var(--sky), var(--lavender));
+    color:#fff;
+    font-size:22px;
+    cursor:pointer;
+    box-shadow: 0 4px 0 var(--sky-deep);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .nav-btn:active{ transform: translateY(3px); box-shadow:none; }
+  .dots{
+    display:flex; gap:8px;
+  }
+  .dot{
+    width:12px; height:12px; border-radius:50%;
+    background:#ecd6e6;
+    border: 2px solid transparent;
+  }
+  .dot.current{ background: var(--pink-deep); }
+  .dot.known{ background: var(--butter-deep); }
+
+  .stars{
+    margin-top: 18px;
+    display:flex;
+    gap: 4px;
+    align-items:center;
+    font-size:14px;
+    font-weight:700;
+    color:#9b6f8f;
+  }
+  .stars .star{ font-size:18px; }
+
+  footer{
+    margin-top: 24px;
+    font-size:12px;
+    color:#b98fac;
+    text-align:center;
+    max-width: 380px;
+  }
+
+  .rec-panel{
+    width:100%;
+    max-width: 480px;
+    background: rgba(255,255,255,.92);
+    border-radius: 26px;
+    box-shadow: 0 12px 32px rgba(200,140,200,.25);
+    padding: 22px;
+    border: 3px solid #ffe1f0;
+  }
+  .rec-panel h2{
+    font-family:'Baloo 2', sans-serif;
+    font-size:21px;
+    margin: 4px 0 2px;
+    color: var(--pink-deep);
+  }
+  .rec-note{
+    font-size:13px;
+    color:#9b6f8f;
+    margin-bottom:16px;
+    line-height:1.4;
+  }
+  .rec-group-title{
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    font-size:14px;
+    color: var(--pink-deep);
+    text-transform:uppercase;
+    letter-spacing:1px;
+    margin: 18px 0 8px;
+  }
+  .rec-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap:10px;
+  }
+  .rec-item{
+    background: linear-gradient(160deg, #fff, #fff0f7);
+    border-radius:16px;
+    padding: 10px 8px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+    border: 2px solid #ffe1f0;
+  }
+  .rec-item .label{
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    font-size:18px;
+    color: var(--ink);
+  }
+  .rec-buttons{
+    display:flex;
+    gap:6px;
+  }
+  .rec-btn, .play-btn{
+    border:none;
+    border-radius:10px;
+    width:36px; height:36px;
+    font-size:16px;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .rec-btn{
+    background: var(--pink-deep);
+    color:#fff;
+  }
+  .rec-btn.recording{
+    background: var(--butter-deep);
+    animation: pulse 1s infinite;
+  }
+  .play-btn{
+    background: var(--sky-deep);
+    color:#fff;
+  }
+  .play-btn:disabled{
+    background:#e6dde4;
+    cursor:default;
+  }
+  @keyframes pulse{
+    0%,100%{ transform:scale(1); }
+    50%{ transform:scale(1.12); }
+  }
+  .has-mark{
+    font-size:11px;
+    color: #4fae7f;
+    font-weight:700;
+    height:14px;
+  }
+  .mic-error{
+    background:#fff0f0;
+    color:#b8395c;
+    border-radius:14px;
+    padding:10px 12px;
+    font-size:13px;
+    margin-bottom:14px;
+    display:none;
+    border: 1px solid #ffd3de;
+  }
+  .level-meter-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:16px;
+  }
+  .device-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .device-row select{
+    flex:1;
+    padding:8px 10px;
+    border-radius:10px;
+    border:1px solid #ffd3de;
+    font-family:'Nunito', sans-serif;
+    font-weight:700;
+    color: var(--ink);
+    background:#fff;
+  }
+  .level-label{
+    font-size:13px;
+    font-weight:700;
+    color:#9b6f8f;
+    white-space:nowrap;
+  }
+  .level-meter{
+    flex:1;
+    height:14px;
+    background:#f3e2ec;
+    border-radius:8px;
+    overflow:hidden;
+  }
+  .level-fill{
+    height:100%;
+    width:0%;
+    background: linear-gradient(90deg, var(--mint), var(--butter), var(--pink-deep));
+    transition: width .05s linear;
+  }
+  .done-btn{
+    margin-top:20px;
+    width:100%;
+    border:none;
+    background: linear-gradient(135deg, var(--mint), var(--sky));
+    color:#2c5c48;
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    font-size:16px;
+    padding:12px;
+    border-radius:16px;
+    cursor:pointer;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ transition:none !important; animation:none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="sparkle-layer" id="sparkleLayer"></div>
+<div class="stage">
+  <h1>Sight Word Cards</h1>
+  <div class="sub" id="subtitle">Tap a card to hear it spelled out</div>
+  <button class="mode-btn" id="toggleModeBtn">Record my voice</button>
+
+  <div id="practiceView">
+    <div class="tabs" id="tabs"></div>
+
+    <div class="card-wrap">
+      <div class="card" id="card">
+        <div class="badge" id="badge">1R</div>
+        <div class="letters" id="letters"></div>
+        <div class="makes-line" id="makesLine">makes</div>
+        <div class="whole-word" id="wholeWord">word</div>
+        <div class="tap-hint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11.5V6a1.5 1.5 0 1 1 3 0v5"/><path d="M12 11.5V5a1.5 1.5 0 1 1 3 0v6.5"/><path d="M15 11.5V7a1.5 1.5 0 1 1 3 0v7c0 3.5-2 6-6 6-3 0-4.5-1.2-6-3.5l-2-3a1.4 1.4 0 0 1 2.2-1.7L9 15"/></svg>
+          <span id="hintText">Tap to hear it</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="nav-btn" id="prevBtn" aria-label="Previous word">&#8592;</button>
+      <div class="dots" id="dots"></div>
+      <button class="nav-btn" id="nextBtn" aria-label="Next word">&#8594;</button>
+    </div>
+
+    <div class="stars" id="starsRow"></div>
+  </div>
+
+  <div id="recordView" class="rec-panel" style="display:none;">
+    <h2>Record your voice</h2>
+    <div class="rec-note">Hold the pink button to record, let go to stop. Recordings only last while this tab stays open. If you refresh or close it, you'll need to record again.</div>
+    <div class="mic-error" id="micError">Couldn't access the microphone.</div>
+    <div class="device-row">
+      <label for="deviceSelect" class="level-label">Microphone:</label>
+      <select id="deviceSelect"><option>Loading devices...</option></select>
+    </div>
+    <div class="level-meter-row">
+      <span class="level-label">Mic level:</span>
+      <div class="level-meter"><div class="level-fill" id="levelFill"></div></div>
+    </div>
+    <div class="rec-group-title">Letters</div>
+    <div class="rec-grid" id="letterRecGrid"></div>
+    <div class="rec-group-title">Words</div>
+    <div class="rec-grid" id="wordRecGrid"></div>
+    <button class="done-btn" id="doneBtn">Done recording</button>
+  </div>
+
+  <footer>Made for practicing 1R and 2R word lists</footer>
+</div>
+
+<script>
+/* ---------- decorative floating hearts / stars / sparkles ---------- */
+(function(){
+  const layer = document.getElementById('sparkleLayer');
+  const shapes = ['\u2661','\u2606','\u2727','\u2764\ufe0f','\u2b50'];
+  const colors = ['#FF9EC4','#C9AFFF','#8FD9FF','#FFE28A','#A8F0D2'];
+  const count = window.innerWidth < 500 ? 10 : 16;
+  for(let i=0;i<count;i++){
+    const el = document.createElement('div');
+    el.className = 'floaty';
+    el.textContent = shapes[i % shapes.length];
+    el.style.left = (Math.random()*94) + 'vw';
+    el.style.top = (Math.random()*94) + 'vh';
+    el.style.fontSize = (14 + Math.random()*20) + 'px';
+    el.style.color = colors[i % colors.length];
+    el.style.animationDuration = (10 + Math.random()*10) + 's';
+    el.style.animationDelay = (Math.random()*6) + 's';
+    layer.appendChild(el);
+  }
+})();
+
+const LISTS = {
+  "1R": ["the", "a", "and", "are"],
+  "2R": ["to", "is", "his", "as"]
+};
+
+const uniqueLetters = [];
+Object.values(LISTS).flat().forEach(word => {
+  word.split('').forEach(ch => {
+    if(!uniqueLetters.includes(ch)) uniqueLetters.push(ch);
+  });
+});
+const allWords = Object.values(LISTS).flat();
+
+let currentList = "1R";
+let currentIndex = 0;
+let knownWords = {};
+
+const recordings = {};
+let mediaStream = null;
+let audioCtx = null;
+let sourceNode = null;
+let processorNode = null;
+let currentBuffers = [];
+let isRecording = false;
+let activeRecKey = null;
+
+const tabsEl = document.getElementById('tabs');
+const badgeEl = document.getElementById('badge');
+const lettersEl = document.getElementById('letters');
+const makesLineEl = document.getElementById('makesLine');
+const wholeWordEl = document.getElementById('wholeWord');
+const cardEl = document.getElementById('card');
+const dotsEl = document.getElementById('dots');
+const starsRowEl = document.getElementById('starsRow');
+const hintText = document.getElementById('hintText');
+const subtitle = document.getElementById('subtitle');
+
+const toggleModeBtn = document.getElementById('toggleModeBtn');
+const practiceView = document.getElementById('practiceView');
+const recordView = document.getElementById('recordView');
+const letterRecGrid = document.getElementById('letterRecGrid');
+const wordRecGrid = document.getElementById('wordRecGrid');
+const micError = document.getElementById('micError');
+const doneBtn = document.getElementById('doneBtn');
+
+function buildTabs(){
+  tabsEl.innerHTML = '';
+  Object.keys(LISTS).forEach(key => {
+    const btn = document.createElement('button');
+    btn.className = 'tab' + (key === currentList ? ' active' : '');
+    btn.textContent = key;
+    btn.onclick = () => {
+      currentList = key;
+      currentIndex = 0;
+      render();
+    };
+    tabsEl.appendChild(btn);
+  });
+}
+
+function buildDots(){
+  dotsEl.innerHTML = '';
+  LISTS[currentList].forEach((w, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === currentIndex ? ' current' : '') + (knownWords[currentList+w] && i !== currentIndex ? ' known' : '');
+    d.onclick = () => { currentIndex = i; render(); };
+    dotsEl.appendChild(d);
+  });
+}
+
+function buildStars(){
+  starsRowEl.innerHTML = '';
+  const total = LISTS[currentList].length;
+  const knownCount = LISTS[currentList].filter(w => knownWords[currentList+w]).length;
+  const label = document.createElement('span');
+  label.textContent = knownCount + ' of ' + total + ' heard ';
+  starsRowEl.appendChild(label);
+  for(let i=0;i<total;i++){
+    const s = document.createElement('span');
+    s.className = 'star';
+    s.textContent = i < knownCount ? '\u2b50' : '\u2606';
+    starsRowEl.appendChild(s);
+  }
+}
+
+function render(){
+  buildTabs();
+  const word = LISTS[currentList][currentIndex];
+  badgeEl.textContent = currentList;
+  wholeWordEl.textContent = word;
+  makesLineEl.textContent = 'makes';
+  makesLineEl.style.visibility = word.length > 1 ? 'visible' : 'hidden';
+  makesLineEl.classList.remove('lit');
+  wholeWordEl.classList.remove('lit');
+  hintText.textContent = 'Tap to hear it';
+
+  lettersEl.innerHTML = '';
+  word.split('').forEach(ch => {
+    const tile = document.createElement('div');
+    tile.className = 'letter-tile';
+    tile.textContent = ch;
+    lettersEl.appendChild(tile);
+  });
+
+  buildDots();
+  buildStars();
+}
+
+let speaking = false;
+
+function speakSynth(text, rate){
+  rate = rate || 0.85;
+  return new Promise(resolve => {
+    if(!('speechSynthesis' in window)){ resolve(); return; }
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = rate;
+    utter.pitch = 1.05;
+    utter.onend = resolve;
+    utter.onerror = resolve;
+    window.speechSynthesis.speak(utter);
+  });
+}
+
+function playRecording(key){
+  return new Promise(resolve => {
+    const url = recordings[key];
+    if(!url){ resolve(false); return; }
+    const audio = new Audio(url);
+    audio.onended = () => resolve(true);
+    audio.onerror = () => resolve(false);
+    audio.play().catch(() => resolve(false));
+  });
+}
+
+async function playSound(key, fallbackText){
+  const played = await playRecording(key);
+  if(!played){
+    await speakSynth(fallbackText);
+  }
+}
+
+async function playWord(){
+  if(speaking) return;
+  speaking = true;
+  hintText.textContent = 'Listening...';
+
+  const word = LISTS[currentList][currentIndex];
+  const tiles = lettersEl.querySelectorAll('.letter-tile');
+
+  window.speechSynthesis.cancel();
+
+  for(let i=0;i<word.length;i++){
+    tiles.forEach(t => t.classList.remove('lit'));
+    tiles[i].classList.add('lit');
+    await playSound('letter:' + word[i], word[i]);
+    await new Promise(r => setTimeout(r, 100));
+  }
+  tiles.forEach(t => t.classList.remove('lit'));
+
+  wholeWordEl.classList.add('lit');
+  if(word.length > 1){
+    makesLineEl.classList.add('lit');
+    await speakSynth('makes');
+    await playSound('word:' + word, word);
+  }
+
+  knownWords[currentList + word] = true;
+  buildDots();
+  buildStars();
+
+  hintText.textContent = 'Tap to hear it again';
+  speaking = false;
+}
+
+cardEl.addEventListener('click', playWord);
+
+document.getElementById('prevBtn').onclick = () => {
+  currentIndex = (currentIndex - 1 + LISTS[currentList].length) % LISTS[currentList].length;
+  render();
+};
+document.getElementById('nextBtn').onclick = () => {
+  currentIndex = (currentIndex + 1) % LISTS[currentList].length;
+  render();
+};
+
+function showMicError(msg){
+  micError.textContent = msg;
+  micError.style.display = 'block';
+}
+
+let selectedDeviceId = null;
+
+async function ensureMic(deviceId){
+  if(mediaStream && !deviceId) return true;
+  if(location.protocol === 'file:'){
+    showMicError('This file is open directly from disk (a "file://" address), and browsers block microphone access there for security. Try uploading it to a site like Netlify Drop and opening the live link instead.');
+    return false;
+  }
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    showMicError('This browser does not expose microphone access here. Try the latest Chrome or Safari.');
+    return false;
+  }
+  try{
+    if(mediaStream){
+      mediaStream.getTracks().forEach(t => t.stop());
+      mediaStream = null;
+    }
+    const constraints = {
+      audio: deviceId
+        ? { deviceId: { exact: deviceId }, echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+        : { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+    };
+    mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+    micError.style.display = 'none';
+    return true;
+  }catch(e){
+    showMicError('Could not get microphone access (' + (e.name || 'error') + '). Check that the browser has permission to use the microphone for this page, then try again.');
+    return false;
+  }
+}
+
+let currentLevel = 0;
+let levelListeners = [];
+
+function teardownAudioGraph(){
+  if(sourceNode){ try{ sourceNode.disconnect(); }catch(e){} sourceNode = null; }
+  if(processorNode){ try{ processorNode.disconnect(); }catch(e){} processorNode = null; }
+  if(audioCtx){ try{ audioCtx.close(); }catch(e){} audioCtx = null; }
+}
+
+async function ensureAudioGraph(deviceId){
+  if(audioCtx && processorNode && !deviceId) return true;
+  teardownAudioGraph();
+  const micOk = await ensureMic(deviceId);
+  if(!micOk) return false;
+  try{
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state === 'suspended'){ await audioCtx.resume(); }
+    sourceNode = audioCtx.createMediaStreamSource(mediaStream);
+    processorNode = audioCtx.createScriptProcessor(4096, 1, 1);
+    const silentGain = audioCtx.createGain();
+    silentGain.gain.value = 0;
+    sourceNode.connect(processorNode);
+    processorNode.connect(silentGain);
+    silentGain.connect(audioCtx.destination);
+    processorNode.onaudioprocess = (e) => {
+      const data = e.inputBuffer.getChannelData(0);
+      let peak = 0;
+      for(let i=0;i<data.length;i++){
+        const v = Math.abs(data[i]);
+        if(v > peak) peak = v;
+      }
+      currentLevel = peak;
+      levelListeners.forEach(fn => fn(peak));
+      if(!isRecording) return;
+      currentBuffers.push(new Float32Array(data));
+    };
+    return true;
+  }catch(err){
+    showMicError('Could not set up audio recording (' + (err.name || 'error') + ').');
+    return false;
+  }
+}
+
+async function populateDeviceList(){
+  const select = document.getElementById('deviceSelect');
+  try{
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const inputs = devices.filter(d => d.kind === 'audioinput');
+    select.innerHTML = '';
+    if(inputs.length === 0){
+      select.innerHTML = '<option>No microphones found</option>';
+      return;
+    }
+    inputs.forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d.deviceId;
+      opt.textContent = d.label || ('Microphone ' + (d.deviceId ? d.deviceId.slice(0,6) : ''));
+      select.appendChild(opt);
+    });
+    if(mediaStream){
+      const track = mediaStream.getAudioTracks()[0];
+      if(track){
+        const settings = track.getSettings ? track.getSettings() : {};
+        if(settings.deviceId) select.value = settings.deviceId;
+      }
+    }
+  }catch(e){
+    select.innerHTML = '<option>Could not list microphones</option>';
+  }
+}
+
+document.getElementById('deviceSelect').addEventListener('change', async (e) => {
+  selectedDeviceId = e.target.value;
+  const levelFill = document.getElementById('levelFill');
+  if(levelFill) levelFill.style.width = '0%';
+  await ensureAudioGraph(selectedDeviceId);
+});
+
+function mergeFloatBuffers(bufferArray, totalLength){
+  const result = new Float32Array(totalLength);
+  let offset = 0;
+  for(const buf of bufferArray){ result.set(buf, offset); offset += buf.length; }
+  return result;
+}
+
+function encodeWAV(samples, sampleRate){
+  const buffer = new ArrayBuffer(44 + samples.length * 2);
+  const view = new DataView(buffer);
+  const writeString = (offset, str) => { for(let i=0;i<str.length;i++) view.setUint8(offset+i, str.charCodeAt(i)); };
+  writeString(0, 'RIFF');
+  view.setUint32(4, 36 + samples.length*2, true);
+  writeString(8, 'WAVE');
+  writeString(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate*2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeString(36, 'data');
+  view.setUint32(40, samples.length*2, true);
+  let offset = 44;
+  for(let i=0;i<samples.length;i++, offset+=2){
+    const s = Math.max(-1, Math.min(1, samples[i]));
+    view.setInt16(offset, s < 0 ? s*0x8000 : s*0x7FFF, true);
+  }
+  return new Blob([view], { type: 'audio/wav' });
+}
+
+function buildRecGrid(container, keys, prefix){
+  container.innerHTML = '';
+  keys.forEach(k => {
+    const fullKey = prefix + ':' + k;
+    const item = document.createElement('div');
+    item.className = 'rec-item';
+
+    const label = document.createElement('div');
+    label.className = 'label';
+    label.textContent = k;
+
+    const mark = document.createElement('div');
+    mark.className = 'has-mark';
+    mark.textContent = recordings[fullKey] ? 'saved' : '';
+
+    const btnRow = document.createElement('div');
+    btnRow.className = 'rec-buttons';
+
+    const recBtn = document.createElement('button');
+    recBtn.className = 'rec-btn';
+    recBtn.textContent = '\u23fa';
+    recBtn.title = 'Hold to record';
+
+    const playBtn = document.createElement('button');
+    playBtn.className = 'play-btn';
+    playBtn.textContent = '\u25b6';
+    playBtn.disabled = !recordings[fullKey];
+    playBtn.onclick = () => {
+      const url = recordings[fullKey];
+      if(!url) return;
+      const audio = new Audio(url);
+      audio.addEventListener('error', () => {
+        const code = audio.error ? audio.error.code : 'unknown';
+        showMicError('Playback error on "' + k + '" (code ' + code + ').');
+      });
+      audio.play().catch(err => showMicError('Could not play "' + k + '" back (' + (err.name || 'error') + ').'));
+    };
+
+    const downloadLink = document.createElement('a');
+    downloadLink.className = 'has-mark';
+    downloadLink.style.textDecoration = 'underline';
+    downloadLink.style.cursor = 'pointer';
+    downloadLink.textContent = '';
+    downloadLink.download = k + '.wav';
+
+    const startRec = async (e) => {
+      e.preventDefault();
+      const ok = await ensureAudioGraph();
+      if(!ok) return;
+      currentBuffers = [];
+      activeRecKey = fullKey;
+      isRecording = true;
+      recBtn.classList.add('recording');
+    };
+    const stopRec = (e) => {
+      e.preventDefault();
+      if(!isRecording) return;
+      isRecording = false;
+      recBtn.classList.remove('recording');
+      const keyAtStop = activeRecKey;
+      const buffersAtStop = currentBuffers;
+      setTimeout(() => {
+        const totalLength = buffersAtStop.reduce((sum, b) => sum + b.length, 0);
+        if(totalLength === 0){
+          showMicError('No audio was captured — try holding the button a little longer while you speak.');
+          return;
+        }
+        const merged = mergeFloatBuffers(buffersAtStop, totalLength);
+        const wavBlob = encodeWAV(merged, audioCtx.sampleRate);
+        if(recordings[keyAtStop]) URL.revokeObjectURL(recordings[keyAtStop]);
+        recordings[keyAtStop] = URL.createObjectURL(wavBlob);
+        playBtn.disabled = false;
+        const seconds = (totalLength / audioCtx.sampleRate).toFixed(2);
+        mark.textContent = 'saved (' + seconds + 's)';
+        downloadLink.href = recordings[keyAtStop];
+        downloadLink.textContent = 'download to test';
+      }, 100);
+    };
+
+    recBtn.addEventListener('pointerdown', startRec);
+    recBtn.addEventListener('pointerup', stopRec);
+    recBtn.addEventListener('pointerleave', stopRec);
+
+    btnRow.appendChild(recBtn);
+    btnRow.appendChild(playBtn);
+    item.appendChild(label);
+    item.appendChild(btnRow);
+    item.appendChild(mark);
+    item.appendChild(downloadLink);
+    container.appendChild(item);
+  });
+}
+
+function renderRecordView(){
+  buildRecGrid(letterRecGrid, uniqueLetters, 'letter');
+  buildRecGrid(wordRecGrid, allWords, 'word');
+  levelListeners = [];
+  ensureAudioGraph().then(async (ok) => {
+    if(!ok) return;
+    const levelFill = document.getElementById('levelFill');
+    levelListeners.push((peak) => {
+      const pct = Math.min(100, Math.round(peak * 300));
+      levelFill.style.width = pct + '%';
+    });
+    await populateDeviceList();
+  });
+}
+
+let inRecordMode = false;
+toggleModeBtn.onclick = () => {
+  inRecordMode = !inRecordMode;
+  if(inRecordMode){
+    practiceView.style.display = 'none';
+    recordView.style.display = 'block';
+    toggleModeBtn.style.display = 'none';
+    subtitle.textContent = 'Record a clip for each letter and word';
+    renderRecordView();
+  }else{
+    practiceView.style.display = 'block';
+    recordView.style.display = 'none';
+    toggleModeBtn.style.display = 'inline-block';
+    subtitle.textContent = 'Tap a card to hear it spelled out';
+  }
+};
+doneBtn.onclick = () => toggleModeBtn.click();
+
+render();
+</script>
+</body>
+</html>
