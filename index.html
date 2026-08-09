@@ -101,11 +101,158 @@
   }
   .mode-btn:active{ transform: translateY(3px); box-shadow:none; }
 
+  .mode-switcher{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:center;
+    margin-bottom: 14px;
+  }
+  .mode-pill{
+    border: 2px solid var(--pink);
+    background:#fff;
+    color: var(--pink-deep);
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    font-size:14px;
+    padding:9px 16px;
+    border-radius:999px;
+    cursor:pointer;
+  }
+  .mode-pill.active{
+    background: linear-gradient(135deg, var(--pink), var(--lavender));
+    color:#fff;
+    border-color:transparent;
+    box-shadow: 0 3px 0 var(--pink-deep);
+  }
+
+  .build-card{
+    width:100%;
+    max-width: 400px;
+    background: linear-gradient(165deg, #fff 0%, #fff0f7 100%);
+    border-radius: 26px;
+    padding: 26px 20px;
+    box-shadow: 0 14px 30px rgba(200,140,200,.25);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:18px;
+    border: 3px solid #ffe1f0;
+  }
+  .hear-btn{
+    border:none;
+    background: linear-gradient(135deg, var(--sky), var(--lavender));
+    color:#fff;
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    font-size:15px;
+    padding:10px 18px;
+    border-radius:999px;
+    cursor:pointer;
+    box-shadow: 0 3px 0 var(--sky-deep);
+  }
+  .hear-btn:active{ transform: translateY(2px); box-shadow:none; }
+  .blanks-row{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+  .blank-slot{
+    width:46px; height:56px;
+    border-radius:12px;
+    border: 3px solid var(--pink);
+    background:#fff;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Baloo 2', sans-serif;
+    font-weight:800;
+    font-size:26px;
+    color: var(--pink-deep);
+    cursor:pointer;
+  }
+  .blank-slot.filled{ background: var(--butter); border-color: var(--butter-deep); }
+  .tile-bank{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+  .letter-tile-btn{
+    width:52px; height:56px;
+    border-radius:12px;
+    border:none;
+    background: var(--pink);
+    color:#fff;
+    font-family:'Baloo 2', sans-serif;
+    font-weight:800;
+    font-size:24px;
+    cursor:pointer;
+    box-shadow: 0 3px 0 var(--pink-deep);
+  }
+  .letter-tile-btn:disabled{
+    background:#e6dde4;
+    box-shadow:none;
+    cursor:default;
+    opacity:.5;
+  }
+  .build-feedback{
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    font-size:16px;
+    min-height:22px;
+    color: var(--pink-deep);
+    text-align:center;
+  }
+  .clear-btn{
+    border:none;
+    background:#f3e2ec;
+    color:#9b6f8f;
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    font-size:13px;
+    padding:7px 16px;
+    border-radius:999px;
+    cursor:pointer;
+  }
+  .quiz-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:12px;
+    width:100%;
+  }
+  .quiz-option{
+    border: 3px solid var(--pink);
+    background:#fff;
+    color: var(--pink-deep);
+    font-family:'Baloo 2', sans-serif;
+    font-weight:800;
+    font-size:20px;
+    padding:16px 8px;
+    border-radius:16px;
+    cursor:pointer;
+  }
+  .quiz-option.correct{ background: var(--mint); border-color:#4fae7f; color:#245f45; }
+  .quiz-option.wrong{ background:#ffd4dc; border-color:var(--pink-deep); color:#9e1730; }
+  .quiz-option:disabled{ cursor:default; }
+  .quiz-score{
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    color:#9b6f8f;
+    font-size:14px;
+  }
+
   .tabs{
     display:flex;
-    gap:16px;
+    gap:14px;
     margin-bottom: 26px;
+    max-width: 100%;
+    overflow-x: auto;
+    padding: 6px 4px 14px;
+    scroll-snap-type: x proximity;
   }
+  .tabs::-webkit-scrollbar{ height:6px; }
+  .tabs::-webkit-scrollbar-thumb{ background: var(--pink); border-radius:4px; }
+  .tab{ flex-shrink:0; scroll-snap-align: start; }
   .tab{
     position:relative;
     width:64px; height:64px;
@@ -449,10 +596,17 @@
 <div class="stage">
   <h1>Sight Word Cards</h1>
   <div class="sub" id="subtitle">Tap a card to hear it spelled out</div>
-  <button class="mode-btn" id="toggleModeBtn">Record my voice</button>
+
+  <div class="mode-switcher" id="modeSwitcher">
+    <button class="mode-pill active" data-mode="practice">🎴 Practice</button>
+    <button class="mode-pill" data-mode="build">🧩 Build</button>
+    <button class="mode-pill" data-mode="quiz">❓ Quiz</button>
+  </div>
+  <button class="mode-btn" id="toggleModeBtn">🎙️ Record my voice</button>
+
+  <div class="tabs" id="tabs"></div>
 
   <div id="practiceView">
-    <div class="tabs" id="tabs"></div>
 
     <div class="card-wrap">
       <div class="card" id="card">
@@ -474,6 +628,31 @@
     </div>
 
     <div class="stars" id="starsRow"></div>
+  </div>
+
+  <div id="buildView" style="display:none;">
+    <div class="build-card">
+      <button class="hear-btn" id="buildHearBtn">🔊 Hear the word</button>
+      <div class="blanks-row" id="blanksRow"></div>
+      <div class="tile-bank" id="tileBank"></div>
+      <div class="build-feedback" id="buildFeedback"></div>
+      <button class="clear-btn" id="buildClearBtn">Clear</button>
+    </div>
+    <div class="nav-row">
+      <button class="nav-btn" id="buildPrevBtn" aria-label="Previous word">&#8592;</button>
+      <div class="dots" id="buildDots"></div>
+      <button class="nav-btn" id="buildNextBtn" aria-label="Next word">&#8594;</button>
+    </div>
+  </div>
+
+  <div id="quizView" style="display:none;">
+    <div class="build-card">
+      <button class="hear-btn" id="quizHearBtn">🔊 Hear the word</button>
+      <div class="quiz-grid" id="quizGrid"></div>
+      <div class="build-feedback" id="quizFeedback"></div>
+      <div class="quiz-score" id="quizScore">Score: 0 / 0</div>
+    </div>
+    <button class="mode-btn" id="quizNextBtn">Next word</button>
   </div>
 
   <div id="recordView" class="rec-panel" style="display:none;">
@@ -521,7 +700,18 @@
 
 const LISTS = {
   "1R": ["the", "a", "and", "are"],
-  "2R": ["to", "is", "his", "as"]
+  "2R": ["to", "is", "his", "as"],
+  "3O": ["has", "was", "we", "she"],
+  "4O": ["he", "me", "be", "i"],
+  "5Y": ["you", "your", "or", "for"],
+  "6Y": ["it", "all", "in", "by"],
+  "7G": ["my", "with", "that", "from"],
+  "8G": ["have", "of", "no", "they"],
+  "9B": ["on", "one", "into", "play"],
+  "10B": ["go", "said", "were", "do"],
+  "11P": ["does", "who", "what", "when"],
+  "13P": ["try", "put", "too", "two"],
+  "14P": ["very", "come", "some"]
 };
 
 const uniqueLetters = [];
@@ -535,6 +725,17 @@ const allWords = Object.values(LISTS).flat();
 let currentList = "1R";
 let currentIndex = 0;
 let knownWords = {};
+let currentMode = 'practice';
+let quizScore = { correct: 0, total: 0 };
+
+function shuffleArr(arr){
+  const a = arr.slice();
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 const recordings = {};
 let mediaStream = null;
@@ -573,10 +774,16 @@ function buildTabs(){
     btn.onclick = () => {
       currentList = key;
       currentIndex = 0;
-      render();
+      refreshCurrentMode();
     };
     tabsEl.appendChild(btn);
   });
+}
+
+function refreshCurrentMode(){
+  if(currentMode === 'practice') render();
+  else if(currentMode === 'build') loadBuildWord();
+  else if(currentMode === 'quiz') loadQuizWord();
 }
 
 function buildDots(){
@@ -703,6 +910,193 @@ document.getElementById('nextBtn').onclick = () => {
   currentIndex = (currentIndex + 1) % LISTS[currentList].length;
   render();
 };
+
+/* ---------- Build mode: assemble the word from letter tiles ---------- */
+
+let buildTarget = '';
+let buildAnswer = [];
+let buildTileEls = [];
+
+function renderBuildBlanks(){
+  const row = document.getElementById('blanksRow');
+  row.innerHTML = '';
+  for(let i = 0; i < buildTarget.length; i++){
+    const slot = document.createElement('div');
+    slot.className = 'blank-slot' + (buildAnswer[i] ? ' filled' : '');
+    slot.textContent = buildAnswer[i] || '';
+    slot.onclick = () => {
+      if(buildAnswer.length === 0) return;
+      buildAnswer.pop();
+      renderBuildBlanks();
+      reEnableLastUsedTile();
+    };
+    row.appendChild(slot);
+  }
+}
+
+function reEnableLastUsedTile(){
+  for(let i = buildTileEls.length - 1; i >= 0; i--){
+    if(buildTileEls[i].btn.disabled){
+      buildTileEls[i].btn.disabled = false;
+      break;
+    }
+  }
+}
+
+function loadBuildWord(){
+  buildTabs();
+  const word = LISTS[currentList][currentIndex];
+  buildTarget = word;
+  buildAnswer = [];
+  document.getElementById('buildFeedback').textContent = '';
+
+  const targetLetters = word.split('');
+  const decoyPool = uniqueLetters.filter(l => !targetLetters.includes(l));
+  const decoys = shuffleArr(decoyPool).slice(0, Math.min(2, decoyPool.length));
+  const tileLetters = shuffleArr([...targetLetters, ...decoys]);
+
+  const bank = document.getElementById('tileBank');
+  bank.innerHTML = '';
+  buildTileEls = [];
+  tileLetters.forEach(letter => {
+    const btn = document.createElement('button');
+    btn.className = 'letter-tile-btn';
+    btn.textContent = letter;
+    btn.onclick = () => {
+      if(buildAnswer.length >= buildTarget.length) return;
+      buildAnswer.push(letter);
+      btn.disabled = true;
+      renderBuildBlanks();
+      if(buildAnswer.length === buildTarget.length){
+        checkBuildAnswer();
+      }
+    };
+    buildTileEls.push({ btn, letter });
+    bank.appendChild(btn);
+  });
+
+  renderBuildBlanks();
+  buildDotsRow();
+}
+
+function buildDotsRow(){
+  const dotsRow = document.getElementById('buildDots');
+  dotsRow.innerHTML = '';
+  LISTS[currentList].forEach((w, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === currentIndex ? ' current' : '');
+    d.onclick = () => { currentIndex = i; loadBuildWord(); };
+    dotsRow.appendChild(d);
+  });
+}
+
+async function checkBuildAnswer(){
+  const feedback = document.getElementById('buildFeedback');
+  if(buildAnswer.join('') === buildTarget){
+    feedback.textContent = 'Yes! 🌟';
+    feedback.style.color = '#4fae7f';
+    await playSound('word:' + buildTarget, buildTarget);
+    setTimeout(() => {
+      currentIndex = (currentIndex + 1) % LISTS[currentList].length;
+      loadBuildWord();
+    }, 900);
+  }else{
+    feedback.textContent = 'Try again!';
+    feedback.style.color = '#c14a63';
+    setTimeout(() => {
+      buildTileEls.forEach(t => t.btn.disabled = false);
+      buildAnswer = [];
+      renderBuildBlanks();
+      feedback.textContent = '';
+    }, 900);
+  }
+}
+
+document.getElementById('buildHearBtn').onclick = () => playSound('word:' + buildTarget, buildTarget);
+document.getElementById('buildClearBtn').onclick = () => {
+  buildTileEls.forEach(t => t.btn.disabled = false);
+  buildAnswer = [];
+  renderBuildBlanks();
+  document.getElementById('buildFeedback').textContent = '';
+};
+document.getElementById('buildPrevBtn').onclick = () => {
+  currentIndex = (currentIndex - 1 + LISTS[currentList].length) % LISTS[currentList].length;
+  loadBuildWord();
+};
+document.getElementById('buildNextBtn').onclick = () => {
+  currentIndex = (currentIndex + 1) % LISTS[currentList].length;
+  loadBuildWord();
+};
+
+/* ---------- Quiz mode: hear it, pick the matching word ---------- */
+
+let quizWord = '';
+let quizAnswered = false;
+
+function loadQuizWord(){
+  buildTabs();
+  const pool = LISTS[currentList];
+  quizWord = pool[Math.floor(Math.random() * pool.length)];
+  quizAnswered = false;
+  document.getElementById('quizFeedback').textContent = '';
+
+  const distractorPool = allWords.filter(w => w !== quizWord);
+  const distractors = shuffleArr(distractorPool).slice(0, 3);
+  const options = shuffleArr([quizWord, ...distractors]);
+
+  const grid = document.getElementById('quizGrid');
+  grid.innerHTML = '';
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-option';
+    btn.textContent = opt;
+    btn.onclick = () => checkQuizAnswer(opt, btn, grid);
+    grid.appendChild(btn);
+  });
+
+  playSound('word:' + quizWord, quizWord);
+}
+
+async function checkQuizAnswer(chosen, btn, grid){
+  if(quizAnswered) return;
+  quizAnswered = true;
+  const feedback = document.getElementById('quizFeedback');
+  const allBtns = grid.querySelectorAll('.quiz-option');
+  allBtns.forEach(b => { b.disabled = true; if(b.textContent === quizWord) b.classList.add('correct'); });
+
+  quizScore.total++;
+  if(chosen === quizWord){
+    quizScore.correct++;
+    feedback.textContent = 'Great job! ⭐';
+    feedback.style.color = '#4fae7f';
+  }else{
+    btn.classList.add('wrong');
+    feedback.textContent = 'That one says "' + quizWord + '"';
+    feedback.style.color = '#c14a63';
+  }
+  document.getElementById('quizScore').textContent = 'Score: ' + quizScore.correct + ' / ' + quizScore.total;
+}
+
+document.getElementById('quizHearBtn').onclick = () => playSound('word:' + quizWord, quizWord);
+document.getElementById('quizNextBtn').onclick = () => loadQuizWord();
+
+/* ---------- Mode switcher ---------- */
+
+function setMode(mode){
+  currentMode = mode;
+  document.getElementById('practiceView').style.display = mode === 'practice' ? 'block' : 'none';
+  document.getElementById('buildView').style.display = mode === 'build' ? 'block' : 'none';
+  document.getElementById('quizView').style.display = mode === 'quiz' ? 'block' : 'none';
+  document.querySelectorAll('.mode-pill').forEach(p => p.classList.toggle('active', p.dataset.mode === mode));
+
+  if(mode === 'practice'){ subtitle.textContent = 'Tap a card to hear it spelled out'; render(); }
+  else if(mode === 'build'){ subtitle.textContent = 'Build the word from the letters'; loadBuildWord(); }
+  else if(mode === 'quiz'){ subtitle.textContent = 'Listen and pick the right word'; loadQuizWord(); }
+}
+
+document.querySelectorAll('.mode-pill').forEach(p => {
+  p.onclick = () => setMode(p.dataset.mode);
+});
 
 function showMicError(msg){
   micError.textContent = msg;
@@ -959,24 +1353,30 @@ function renderRecordView(){
 }
 
 let inRecordMode = false;
+const modeSwitcherEl = document.getElementById('modeSwitcher');
 toggleModeBtn.onclick = () => {
   inRecordMode = !inRecordMode;
   if(inRecordMode){
-    practiceView.style.display = 'none';
+    document.getElementById('practiceView').style.display = 'none';
+    document.getElementById('buildView').style.display = 'none';
+    document.getElementById('quizView').style.display = 'none';
+    modeSwitcherEl.style.display = 'none';
+    tabsEl.style.display = 'none';
     recordView.style.display = 'block';
-    toggleModeBtn.style.display = 'none';
+    toggleModeBtn.textContent = '\u2b05 Back to games';
     subtitle.textContent = 'Record a clip for each letter and word';
     renderRecordView();
   }else{
-    practiceView.style.display = 'block';
+    modeSwitcherEl.style.display = 'flex';
+    tabsEl.style.display = 'flex';
     recordView.style.display = 'none';
-    toggleModeBtn.style.display = 'inline-block';
-    subtitle.textContent = 'Tap a card to hear it spelled out';
+    toggleModeBtn.textContent = '\ud83c\udf99\ufe0f Record my voice';
+    setMode(currentMode);
   }
 };
 doneBtn.onclick = () => toggleModeBtn.click();
 
-render();
+setMode('practice');
 </script>
 </body>
 </html>
