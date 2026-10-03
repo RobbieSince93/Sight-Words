@@ -1,2070 +1,535 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Sight Word Flashcards</title>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Card Radar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
-  :root{
-    --pink: #FF9EC4;
-    --pink-deep: #E86FA6;
-    --sky: #8FD9FF;
-    --sky-deep: #5CBBEB;
-    --lavender: #C9AFFF;
-    --butter: #FFE28A;
-    --butter-deep: #F0BF3C;
-    --mint: #A8F0D2;
-    --cream: #FFF6FA;
-    --ink: #5B3A52;
+/* Layout: filter sidebar on the left, sortable collection-style table on the right; stacks on phones. Dark-first. */
+:root {
+  --bg: #0c0e13;
+  --panel: #12151c;
+  --panel2: #181c26;
+  --line: #232937;
+  --fg: #e8ebf2;
+  --muted: #8c95a8;
+  --accent: #5b9bff;
+  --up: #34c27a;
+  --down: #f06464;
+  --warn: #e0b340;
+  --chip: #1a1f2b;
+  --chip-on: #e8ebf2;
+  --chip-on-fg: #0c0e13;
+  --font-body: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-num: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f4f5f9; --panel: #ffffff; --panel2: #eff1f6; --line: #dde1ea;
+    --fg: #141824; --muted: #626c80; --accent: #1f5fd6;
+    --up: #14854f; --down: #c93636; --warn: #8f6400;
+    --chip: #eceff5; --chip-on: #141824; --chip-on-fg: #ffffff;
+    color-scheme: light;
   }
-  *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
-  html,body{
-    margin:0; padding:0; min-height:100vh;
-    width:100%;
-    max-width:100vw;
-    background:
-      radial-gradient(circle at 10% 8%, rgba(255,255,255,.9) 0%, transparent 30%),
-      radial-gradient(circle at 90% 15%, rgba(255,255,255,.7) 0%, transparent 25%),
-      radial-gradient(circle at 20% 85%, rgba(255,255,255,.6) 0%, transparent 30%),
-      linear-gradient(180deg, #BEE9FF 0%, #E7F6FF 35%, #FFF0F7 70%, #FFE9F4 100%);
-    font-family:'Nunito', sans-serif;
-    color: var(--ink);
-    overflow-x:hidden;
-    position:relative;
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-  }
-  button, select, input{
-    touch-action: manipulation;
-  }
+}
+:root[data-theme="light"] {
+  --bg: #f4f5f9; --panel: #ffffff; --panel2: #eff1f6; --line: #dde1ea;
+  --fg: #141824; --muted: #626c80; --accent: #1f5fd6;
+  --up: #14854f; --down: #c93636; --warn: #8f6400;
+  --chip: #eceff5; --chip-on: #141824; --chip-on-fg: #ffffff;
+  color-scheme: light;
+}
 
-  /* floating decorations */
-  .sparkle-layer{
-    position:fixed;
-    inset:0;
-    pointer-events:none;
-    z-index:0;
-    overflow:hidden;
-  }
-  .floaty{
-    position:absolute;
-    opacity:.55;
-    animation: drift 14s ease-in-out infinite;
-    filter: drop-shadow(0 2px 4px rgba(255,255,255,.6));
-  }
-  @keyframes drift{
-    0%   { transform: translateY(0) rotate(0deg); }
-    50%  { transform: translateY(-26px) rotate(8deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-  @keyframes twinkle{
-    0%,100%{ opacity:.25; transform:scale(1); }
-    50%{ opacity:.9; transform:scale(1.25); }
-  }
+body { background: var(--bg); color: var(--fg); font: 14px/1.45 var(--font-body); }
+*, *::before, *::after { box-sizing: border-box; }
+button, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-  .stage{
-    max-width: 620px;
-    width:100%;
-    margin: 0 auto;
-    padding: max(18px, env(safe-area-inset-top)) 14px calc(50px + env(safe-area-inset-bottom));
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    position:relative;
-    z-index:1;
-  }
-  #subjectReading, #subjectPhonics, #subjectMath, #subjectScience, #subjectWorld{
-    width:100%;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    flex-shrink:0;
-  }
-  h1{
-    font-family:'Baloo 2', sans-serif;
-    font-weight:800;
-    font-size: clamp(28px, 6vw, 42px);
-    margin: 4px 0 2px;
-    letter-spacing: -0.5px;
-    text-align:center;
-    background: linear-gradient(90deg, var(--pink-deep), var(--lavender), var(--sky-deep));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  .sub{
-    font-weight:700;
-    color:#9b6f8f;
-    margin-bottom: 14px;
-    text-align:center;
-    font-size:15px;
-  }
-  .mode-btn{
-    border:none;
-    background: linear-gradient(135deg, var(--lavender), var(--pink));
-    color:#fff;
-    font-family:'Baloo 2', sans-serif;
-    font-weight:700;
-    font-size:14px;
-    padding:11px 20px;
-    border-radius:999px;
-    cursor:pointer;
-    box-shadow: 0 4px 0 var(--pink-deep);
-    margin-bottom: 22px;
-  }
-  .mode-btn:active{ transform: translateY(3px); box-shadow:none; }
+.app {
+  max-width: 1440px; margin: 0 auto;
+  padding-inline: 16px; padding-block: 16px 40px;
+  display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 20px; align-items: start;
+}
+@media (max-width: 900px) { .app { grid-template-columns: minmax(0, 1fr); } }
 
-  .mode-switcher{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    justify-content:center;
-    margin-bottom: 14px;
-  }
-  .mode-pill{
-    border: 2px solid var(--pink);
-    background:#fff;
-    color: var(--pink-deep);
-    font-family:'Baloo 2', sans-serif;
-    font-weight:700;
-    font-size:14px;
-    padding:9px 16px;
-    border-radius:999px;
-    cursor:pointer;
-  }
-  .mode-pill.active{
-    background: linear-gradient(135deg, var(--pink), var(--lavender));
-    color:#fff;
-    border-color:transparent;
-    box-shadow: 0 3px 0 var(--pink-deep);
-  }
+.side {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+  padding: 18px; display: flex; flex-direction: column; gap: 20px;
+  position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px);
+  min-width: 0;
+}
+@media (max-width: 900px) { .side { position: static; } }
+.side-h { margin: 0; font-size: 15px; font-weight: 700; }
+.side h3 { margin: 0 0 8px; font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  border: 1px solid var(--line); background: var(--chip); border-radius: 999px;
+  padding: 6px 12px; font-size: 13px; cursor: pointer; white-space: nowrap;
+}
+.chip:hover { border-color: var(--muted); }
+.chip[aria-pressed="true"] { background: var(--chip-on); color: var(--chip-on-fg); border-color: var(--chip-on); font-weight: 500; }
+.sw { display: flex; gap: 10px; align-items: center; cursor: pointer; font-size: 13px; }
+.sw input { width: 16px; height: 16px; accent-color: var(--accent); margin: 0; }
 
-  .subject-switcher{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    justify-content:center;
-    margin-bottom: 20px;
-  }
-  .subject-pill{
-    border: 2px solid var(--lavender);
-    background:#fff;
-    color: var(--ink);
-    font-family:'Baloo 2', sans-serif;
-    font-weight:700;
-    font-size:14px;
-    padding:10px 16px;
-    border-radius:999px;
-    cursor:pointer;
-  }
-  .subject-pill.active{
-    background: linear-gradient(135deg, var(--lavender), var(--sky));
-    color:#fff;
-    border-color:transparent;
-    box-shadow: 0 3px 0 var(--sky-deep);
-  }
+main { min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+.top { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: end; justify-content: space-between; }
+.top > div { min-width: 0; }
+h1 { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -.01em; text-wrap: balance; }
+.sub { margin: 4px 0 0; color: var(--muted); max-width: 60ch; }
+.search {
+  flex: 0 1 300px; min-width: 200px; width: 100%;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px;
+}
+.search::placeholder { color: var(--muted); }
 
-  .letter-grid{
-    display:grid;
-    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
-    gap:10px;
-    width:100%;
-    max-width: 480px;
-  }
-  .letter-card{
-    aspect-ratio: 1;
-    border-radius:14px;
-    border:none;
-    background: linear-gradient(160deg, var(--pink), var(--lavender));
-    color:#fff;
-    font-family:'Baloo 2', sans-serif;
-    font-weight:800;
-    font-size:24px;
-    cursor:pointer;
-    box-shadow: 0 3px 0 var(--pink-deep);
-  }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.tab {
+  border: 1px solid transparent; background: transparent; color: var(--muted);
+  border-radius: 999px; padding: 7px 14px; cursor: pointer; font-weight: 500;
+}
+.tab:hover { color: var(--fg); }
+.tab[aria-selected="true"] { background: var(--panel); border-color: var(--line); color: var(--fg); }
 
-  .number-grid{
-    display:grid;
-    grid-template-columns: repeat(auto-fill, minmax(34px, 1fr));
-    gap:6px;
-    width:100%;
-    max-width: 480px;
-  }
-  .number-cell{
-    aspect-ratio:1;
-    min-height:34px;
-    border-radius:8px;
-    border:none;
-    background:#fff;
-    color: var(--pink-deep);
-    font-weight:700;
-    font-size:13px;
-    cursor:pointer;
-    border: 1px solid #ffe1f0;
-  }
-  .number-cell.tens{ background: var(--butter); color:#7a5a12; }
-  .number-cell.lit{ background: var(--pink-deep); color:#fff; transform:scale(1.1); }
-
-  .moreless-row{
-    display:flex;
-    justify-content:center;
-    gap: 16px;
-    width:100%;
-  }
-  .moreless-group{
-    flex:1 1 0;
-    min-width:0;
-    max-width: 150px;
-    min-height:110px;
-    border-radius:16px;
-    border: 3px solid var(--pink);
-    background:#fff;
-    display:flex;
-    flex-wrap:wrap;
-    align-content:center;
-    justify-content:center;
-    gap:6px;
-    padding:10px;
-    cursor:pointer;
-    font-size:26px;
-  }
-  .moreless-group.correct{ background: var(--mint); border-color:#4fae7f; }
-  .moreless-group.wrong{ background:#ffd4dc; border-color:var(--pink-deep); }
-
-  .shape-icon, .icon-emoji{
-    font-size:80px;
-    margin-top: 30px;
-    position:relative; z-index:1;
-  }
-
-  .pattern-row{
-    display:flex;
-    gap:10px;
-    font-size:34px;
-    justify-content:center;
-    flex-wrap:wrap;
-  }
-
-  .build-card{
-    width:100%;
-    max-width: 400px;
-    background: linear-gradient(165deg, #fff 0%, #fff0f7 100%);
-    border-radius: 26px;
-    padding: 26px 20px;
-    box-shadow: 0 14px 30px rgba(200,140,200,.25);
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:18px;
-    border: 3px solid #ffe1f0;
-  }
-  .hear-btn{
-    border:none;
-    background: linear-gradient(135deg, var(--sky), var(--lavender));
-    color:#fff;
-    font-family:'Baloo 2', sans-serif;
-    font-weight:700;
-    font-size:15px;
-    padding:10px 18px;
-    border-radius:999px;
-    cursor:pointer;
-    box-shadow: 0 3px 0 var(--sky-deep);
-  }
-  .hear-btn:active{ transform: translateY(2px); box-shadow:none; }
-  .blanks-row{
-    display:flex;
-    gap:8px;
-    flex-wrap:wrap;
-    justify-content:center;
-  }
-  .blank-slot{
-    width:46px; height:56px;
-    border-radius:12px;
-    border: 3px solid var(--pink);
-    background:#fff;
-    display:flex; align-items:center; justify-content:center;
-    font-family:'Baloo 2', sans-serif;
-    font-weight:800;
-    font-size:26px;
-    color: var(--pink-deep);
-    cursor:pointer;
-  }
-  .blank-slot.filled{ background: var(--butter); border-color: var(--butter-deep); }
-  .tile-bank{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    justify-content:center;
-  }
-  .letter-tile-btn{
-    width:52px; height:56px;
-    border-radius:12px;
-    border:none;
-    background: var(--pink);
-    color:#fff;
-    font-family:'Baloo 2', sans-serif;
-    font-weight:800;
-    font-size:24px;
-    cursor:pointer;
-    box-shadow: 0 3px 0 var(--pink-deep);
-  }
-  .letter-tile-btn:disabled{
-    background:#e6dde4;
-    box-shadow:none;
-    cursor:default;
-    opacity:.5;
-  }
-  .build-feedback{
-    font-family:'Baloo 2', sans-serif;
-    font-weight:700;
-    font-size:16px;
-    min-height:22px;
-    color: var(--pink-deep);
-    text-align:center;
-  }
-  .clear-btn{
-    border:none;
-    background:#f3e2ec;
-    color:#9b6f8f;
-    font-family:'Baloo 2', sans-serif;
-    font-weight:700;
-    font-size:13px;
-    padding:7px 16px;
-    border-radius:999px;
-    cursor:pointer;
-  }
-  .quiz-grid{
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap:12px;
-    width:100%;
-  }
-  .quiz-option{
-    border: 3px solid var(--pink);
-    background:#fff;
-    color: var(--pink-deep);
-    font-family:'Baloo 2', sans-serif;
-    font-weight:800;
-    font-size:20px;
-    padding:16px 8px;
-    border-radius:16px;
-    cursor:pointer;
-  }
-  .quiz-option.correct{ background: var(--mint); border-color:#4fae7f; color:#245f45; }
-  .quiz-option.wrong{ background:#ffd4dc; border-color:var(--pink-deep); color:#9e1730; }
-  .quiz-option:disabled{ cursor:default; }
-  .quiz-score{
-    font-family:'Baloo 2', sans-serif;
-    font-weight:700;
-    color:#9b6f8f;
-    font-size:14px;
-  }
-
-  #practiceView, #buildView, #quizView{
-    width:100%;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    flex-shrink:0;
-  }
-
-  .tabs{
-    display:flex;
-    gap:14px;
-    margin-bottom: 26px;
-    max-width: 100%;
-    overflow-x: auto;
-    padding: 6px 4px 14px;
-    scroll-snap-type: x proximity;
-  }
-  .tabs::-webkit-scrollbar{ height:6px; }
-  .tabs::-webkit-scrollbar-thumb{ background: var(--pink); border-radius:4px; }
-  .tab{ flex-shrink:0; scroll-snap-align: start; }
-  .tab{
-    position:relative;
-    width:64px; height:64px;
-    border-radius:50%;
-    background: #fff;
-    color: var(--pink-deep);
-    border: 3px solid var(--pink);
-    font-family:'Baloo 2', sans-serif;
-    font-weight:800;
-    font-size:19px;
-    cursor:pointer;
-    display:flex; align-items:center; justify-content:center;
-    box-shadow: 0 4px 0 rgba(232,111,166,.35), 0 6px 14px rgba(255,158,196,.25);
-    transition: transform .12s ease;
-  }
-  .tab.active{
-    color:#fff;
-    background: linear-gradient(135deg, var(--pink), var(--lavender));
-    border-color: transparent;
-    box-shadow: 0 4px 0 var(--pink-deep), 0 6px 16px rgba(232,111,166,.4);
-  }
-  .tab:active{ transform: translateY(3px); box-shadow:none; }
-
-  .card-wrap{
-    width: 100%;
-    max-width: 340px;
-    height: clamp(320px, 78vw, 440px);
-    margin-bottom: 22px;
-  }
-  .card{
-    width:100%; height:100%;
-    border-radius: 34px;
-    background: linear-gradient(165deg, var(--pink) 0%, var(--lavender) 55%, var(--sky) 100%);
-    box-shadow: 0 18px 0 -6px rgba(255,158,196,.25), 0 24px 44px rgba(200,140,200,.35);
-    display:flex; flex-direction:column; align-items:center;
-    padding: 30px 18px 22px;
-    position:relative;
-    cursor:pointer;
-    transition: transform .08s ease;
-    overflow: hidden;
-  }
-  .card::before{
-    content:"";
-    position:absolute;
-    top:-40px; right:-40px;
-    width:140px; height:140px;
-    background: radial-gradient(circle, rgba(255,255,255,.55) 0%, transparent 70%);
-    border-radius:50%;
-  }
-  .card::after{
-    content:"";
-    position:absolute;
-    bottom:-50px; left:-30px;
-    width:160px; height:160px;
-    background: radial-gradient(circle, rgba(255,255,255,.35) 0%, transparent 70%);
-    border-radius:50%;
-  }
-  .card:active{ transform: scale(.98); }
-  .badge{
-    position:absolute;
-    top:-18px;
-    width:60px; height:60px;
-    border-radius:50%;
-    background: #fff;
-    color: var(--pink-deep);
-    font-family:'Baloo 2', sans-serif;
-    font-weight:800;
-    font-size:16px;
-    display:flex; align-items:center; justify-content:center;
-    box-shadow: 0 4px 0 rgba(232,111,166,.4);
-    border: 3px solid var(--butter);
-  }
-  .letters{
-    display:flex;
-    gap:10px;
-    margin-top: 48px;
-    flex-wrap: wrap;
-    justify-content:center;
-    min-height: 90px;
-    position:relative;
-    z-index:1;
-  }
-  .letter-tile{
-    width: 58px; height: 70px;
-    background: #fff;
-    border-radius: 18px;
-    display:flex; align-items:center; justify-content:center;
-    font-family:'Baloo 2', sans-serif;
-    font-weight:700;
-    font-size: 32px;
-    color: var(--pink-deep);
-    box-shadow: 0 4px 0 #f0c9dc;
-    transition: transform .18s ease, background .18s ease, color .18s ease, box-shadow .18s ease;
-  }
-  .letter-tile.lit{
-    background: var(--butter);
-    color: #7a5a12;
-    transform: translateY(-6px) scale(1.1) rotate(-3deg);
-    box-shadow: 0 4px 0 var(--butter-deep);
-  }
-  .makes-line{
-    font-family:'Baloo 2', sans-serif;
-    font-weight:700;
-    color: rgba(255,255,255,.6);
-    font-size: 20px;
-    margin-top: 22px;
-    letter-spacing: 1px;
-    transition: color .2s ease;
-    position:relative; z-index:1;
-  }
-  .makes-line.lit{ color:#fff; }
-  .whole-word{
-    font-family:'Baloo 2', sans-serif;
-    font-weight:800;
-    font-size: 46px;
-    color: rgba(255,255,255,.4);
-    margin-top: 4px;
-    transition: color .2s ease, transform .2s ease;
-    position:relative; z-index:1;
-  }
-  .whole-word.lit{ color:#fff; transform: scale(1.08); }
-  .tap-hint{
-    margin-top:auto;
-    color: rgba(255,255,255,.9);
-    font-size:13px;
-    font-weight:700;
-    display:flex; align-items:center; gap:6px;
-    position:relative; z-index:1;
-  }
-  .tap-hint svg{ width:16px; height:16px; }
-
-  .nav-row{
-    display:flex;
-    align-items:center;
-    gap: 22px;
-  }
-  .nav-btn{
-    width:52px; height:52px;
-    border-radius:50%;
-    border:none;
-    background: linear-gradient(135deg, var(--sky), var(--lavender));
-    color:#fff;
-    font-size:22px;
-    cursor:pointer;
-    box-shadow: 0 4px 0 var(--sky-deep);
-    display:flex; align-items:center; justify-content:center;
-  }
-  .nav-btn:active{ transform: translateY(3px); box-shadow:none; }
-  .dots{
-    display:flex; gap:8px;
-  }
-  .dot{
-    width:12px; height:12px; border-radius:50%;
-    background:#ecd6e6;
-    border: 2px solid transparent;
-    position:relative;
-  }
-  .dot::after{
-    content:"";
-    position:absolute;
-    top:-12px; left:-12px; right:-12px; bottom:-12px;
-  }
-  .dot.current{ background: var(--pink-deep); }
-  .dot.known{ background: var(--butter-deep); }
-
-  .stars{
-    margin-top: 18px;
-    display:flex;
-    gap: 4px;
-    align-items:center;
-    font-size:14px;
-    font-weight:700;
-    color:#9b6f8f;
-  }
-  .stars .star{ font-size:18px; }
-
-  footer{
-    margin-top: 24px;
-    font-size:12px;
-    color:#b98fac;
-    text-align:center;
-    max-width: 380px;
-  }
-
-  .rec-panel{
-    width:100%;
-    max-width: 480px;
-    background: rgba(255,255,255,.92);
-    border-radius: 26px;
-    box-shadow: 0 12px 32px rgba(200,140,200,.25);
-    padding: 22px;
-    border: 3px solid #ffe1f0;
-  }
-  .rec-panel h2{
-    font-family:'Baloo 2', sans-serif;
-    font-size:21px;
-    margin: 4px 0 2px;
-    color: var(--pink-deep);
-  }
-  .rec-note{
-    font-size:13px;
-    color:#9b6f8f;
-    margin-bottom:16px;
-    line-height:1.4;
-  }
-  .rec-group-title{
-    font-family:'Baloo 2', sans-serif;
-    font-weight:700;
-    font-size:14px;
-    color: var(--pink-deep);
-    text-transform:uppercase;
-    letter-spacing:1px;
-    margin: 18px 0 8px;
-  }
-  .rec-grid{
-    display:grid;
-    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-    gap:10px;
-  }
-  .rec-item{
-    background: linear-gradient(160deg, #fff, #fff0f7);
-    border-radius:16px;
-    padding: 10px 8px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:6px;
-    border: 2px solid #ffe1f0;
-  }
-  .rec-item .label{
-    font-family:'Baloo 2', sans-serif;
-    font-weight:700;
-    font-size:18px;
-    color: var(--ink);
-  }
-  .rec-buttons{
-    display:flex;
-    gap:6px;
-  }
-  .rec-btn, .play-btn{
-    border:none;
-    border-radius:10px;
-    width:36px; height:36px;
-    font-size:16px;
-    cursor:pointer;
-    display:flex; align-items:center; justify-content:center;
-  }
-  .rec-btn{
-    background: var(--pink-deep);
-    color:#fff;
-  }
-  .rec-btn.recording{
-    background: var(--butter-deep);
-    animation: pulse 1s infinite;
-  }
-  .play-btn{
-    background: var(--sky-deep);
-    color:#fff;
-  }
-  .play-btn:disabled{
-    background:#e6dde4;
-    cursor:default;
-  }
-  @keyframes pulse{
-    0%,100%{ transform:scale(1); }
-    50%{ transform:scale(1.12); }
-  }
-  .has-mark{
-    font-size:11px;
-    color: #4fae7f;
-    font-weight:700;
-    height:14px;
-  }
-  .mic-error{
-    background:#fff0f0;
-    color:#b8395c;
-    border-radius:14px;
-    padding:10px 12px;
-    font-size:13px;
-    margin-bottom:14px;
-    display:none;
-    border: 1px solid #ffd3de;
-  }
-  .level-meter-row{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin-bottom:16px;
-  }
-  .device-row{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin-bottom:14px;
-  }
-  .device-row select{
-    flex:1;
-    padding:8px 10px;
-    border-radius:10px;
-    border:1px solid #ffd3de;
-    font-family:'Nunito', sans-serif;
-    font-weight:700;
-    color: var(--ink);
-    background:#fff;
-  }
-  .level-label{
-    font-size:13px;
-    font-weight:700;
-    color:#9b6f8f;
-    white-space:nowrap;
-  }
-  .level-meter{
-    flex:1;
-    height:14px;
-    background:#f3e2ec;
-    border-radius:8px;
-    overflow:hidden;
-  }
-  .level-fill{
-    height:100%;
-    width:0%;
-    background: linear-gradient(90deg, var(--mint), var(--butter), var(--pink-deep));
-    transition: width .05s linear;
-  }
-  .done-btn{
-    margin-top:20px;
-    width:100%;
-    border:none;
-    background: linear-gradient(135deg, var(--mint), var(--sky));
-    color:#2c5c48;
-    font-family:'Baloo 2', sans-serif;
-    font-weight:700;
-    font-size:16px;
-    padding:12px;
-    border-radius:16px;
-    cursor:pointer;
-  }
-
-  @media (prefers-reduced-motion: reduce){
-    *{ transition:none !important; animation:none !important; }
-  }
+.tablewrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
+table { border-collapse: collapse; width: 100%; min-width: 900px; }
+th {
+  padding: 12px; text-align: right; white-space: nowrap;
+  font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+  font-family: var(--font-num); user-select: none;
+}
+th.left, td.left { text-align: left; }
+th.sortable { cursor: pointer; }
+th.sortable:hover { color: var(--fg); }
+th[aria-sort="ascending"]::after { content: " \25B2"; }
+th[aria-sort="descending"]::after { content: " \25BC"; }
+td { padding: 10px 12px; border-top: 1px solid var(--line); text-align: right; vertical-align: middle; }
+tbody tr:hover td { background: var(--panel2); }
+.num { font-family: var(--font-num); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.small { display: block; font-size: 11px; color: var(--muted); font-family: var(--font-body); }
+.c-star { width: 44px; padding-inline: 8px 0; text-align: center; }
+.star { background: none; border: 0; cursor: pointer; font-size: 17px; color: var(--muted); padding: 4px 8px; line-height: 1; }
+.star[aria-pressed="true"] { color: var(--warn); }
+.cardcell { display: flex; align-items: center; gap: 12px; min-width: 260px; }
+.av {
+  flex: none; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 13px; font-weight: 700; color: #fff;
+}
+.who { min-width: 0; }
+.who b { display: block; font-weight: 700; }
+.who span { display: block; color: var(--muted); font-size: 12px; }
+.up { color: var(--up); } .down { color: var(--down); } .flat { color: var(--muted); }
+.pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; border: 1px solid var(--line); white-space: nowrap; }
+.pill.up { border-color: var(--up); }
+.pill.down { border-color: var(--down); }
+.pill.warn { color: var(--warn); border-color: var(--warn); }
+.pill.val { color: var(--accent); border-color: var(--accent); }
+.pill.ref, .pill.find { color: var(--muted); }
+a.sold { color: var(--accent); text-decoration: none; font-weight: 500; white-space: nowrap; }
+a.sold:hover { text-decoration: underline; }
+.empty { padding: 36px 16px; text-align: center; color: var(--muted); }
+.count { margin: 0; color: var(--muted); font-size: 13px; }
+.note { margin: 0; color: var(--muted); font-size: 13px; max-width: 90ch; }
+.sel { width: 100%; background: var(--chip); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; min-width: 0; }
+.lookup { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.lookup h2 { margin: 0; font-size: 16px; font-weight: 700; }
+.lookup p { margin: 2px 0 0; color: var(--muted); }
+.lk-row { display: grid; grid-template-columns: 170px minmax(0, 1fr) 170px; gap: 8px; }
+@media (max-width: 700px) { .lk-row { grid-template-columns: minmax(0, 1fr); } }
+.lk-input { width: 100%; min-width: 0; background: var(--chip); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; }
+.lk-input::placeholder { color: var(--muted); }
+.lk-links { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.lk-links a { border: 1px solid var(--accent); color: var(--accent); border-radius: 999px; padding: 7px 14px; text-decoration: none; font-weight: 500; white-space: nowrap; }
+.lk-links a:hover { text-decoration: underline; }
+.lk-links a.off { border-color: var(--line); color: var(--muted); pointer-events: none; }
+.lk-hint { color: var(--muted); font-size: 13px; }
+.signote { display: block; margin-top: 4px; max-width: 220px; white-space: normal; font-size: 11px; color: var(--muted); line-height: 1.35; }
+@media (prefers-reduced-motion: no-preference) { .chip, .tab, tbody tr td { transition: background-color .12s, color .12s, border-color .12s; } }
 </style>
-</head>
-<body>
-<div class="sparkle-layer" id="sparkleLayer"></div>
-<div class="stage">
-  <h1>Kindergarten Learning Hub</h1>
-  <div class="sub" id="topSubtitle">Pick a subject to practice</div>
 
-  <div class="subject-switcher" id="subjectSwitcher">
-    <button class="subject-pill active" data-subject="reading">📖 Sight Words</button>
-    <button class="subject-pill" data-subject="phonics">🔤 Phonics</button>
-    <button class="subject-pill" data-subject="math">🔢 Math</button>
-    <button class="subject-pill" data-subject="science">🔬 Science</button>
-    <button class="subject-pill" data-subject="world">🌍 World</button>
-  </div>
+<div class="app">
+  <aside class="side" aria-label="Filters">
+    <h2 class="side-h">Filter by</h2>
+    <section><h3>Sport</h3><div class="chips" id="f-sport"></div></section>
+    <section><h3>Player</h3><select class="sel" id="f-player" aria-label="Player"></select></section>
+    <section><h3>Price</h3><div class="chips" id="f-price"></div></section>
+    <section><h3>Grade</h3><div class="chips" id="f-grade"></div></section>
+    <section><h3>Type</h3><label class="sw" for="f-auto"><input type="checkbox" id="f-auto"> Autographs only</label></section>
+  </aside>
 
-  <div id="subjectReading">
-  <div class="sub" id="subtitle">Tap a card to hear it spelled out</div>
-
-  <div class="mode-switcher" id="modeSwitcher">
-    <button class="mode-pill active" data-mode="practice">🎴 Practice</button>
-    <button class="mode-pill" data-mode="build">🧩 Build</button>
-    <button class="mode-pill" data-mode="quiz">❓ Quiz</button>
-  </div>
-  <button class="mode-btn" id="toggleModeBtn">🎙️ Record my voice</button>
-
-  <div class="tabs" id="tabs"></div>
-
-  <div id="practiceView">
-
-    <div class="card-wrap">
-      <div class="card" id="card">
-        <div class="badge" id="badge">1R</div>
-        <div class="letters" id="letters"></div>
-        <div class="makes-line" id="makesLine">makes</div>
-        <div class="whole-word" id="wholeWord">word</div>
-        <div class="tap-hint">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11.5V6a1.5 1.5 0 1 1 3 0v5"/><path d="M12 11.5V5a1.5 1.5 0 1 1 3 0v6.5"/><path d="M15 11.5V7a1.5 1.5 0 1 1 3 0v7c0 3.5-2 6-6 6-3 0-4.5-1.2-6-3.5l-2-3a1.4 1.4 0 0 1 2.2-1.7L9 15"/></svg>
-          <span id="hintText">Tap to hear it</span>
-        </div>
+  <main>
+    <header class="top">
+      <div>
+        <h1>Card Radar</h1>
+        <p class="sub">Cards to watch in baseball, football, basketball, hockey, soccer and WNBA, with recent prices and price changes. Use the look-up below for any player in any sport.</p>
       </div>
-    </div>
+      <input class="search" id="q" type="search" placeholder="Search players or sets" aria-label="Search cards">
+    </header>
 
-    <div class="nav-row">
-      <button class="nav-btn" id="prevBtn" aria-label="Previous word">&#8592;</button>
-      <div class="dots" id="dots"></div>
-      <button class="nav-btn" id="nextBtn" aria-label="Next word">&#8594;</button>
-    </div>
-
-    <div class="stars" id="starsRow"></div>
-  </div>
-
-  <div id="buildView" style="display:none;">
-    <div class="build-card">
-      <button class="hear-btn" id="buildHearBtn">🔊 Hear the word</button>
-      <div class="blanks-row" id="blanksRow"></div>
-      <div class="tile-bank" id="tileBank"></div>
-      <div class="build-feedback" id="buildFeedback"></div>
-      <button class="clear-btn" id="buildClearBtn">Clear</button>
-    </div>
-    <div class="nav-row">
-      <button class="nav-btn" id="buildPrevBtn" aria-label="Previous word">&#8592;</button>
-      <div class="dots" id="buildDots"></div>
-      <button class="nav-btn" id="buildNextBtn" aria-label="Next word">&#8594;</button>
-    </div>
-  </div>
-
-  <div id="quizView" style="display:none;">
-    <div class="build-card">
-      <button class="hear-btn" id="quizHearBtn">🔊 Hear the word</button>
-      <div class="quiz-grid" id="quizGrid"></div>
-      <div class="build-feedback" id="quizFeedback"></div>
-      <div class="quiz-score" id="quizScore">Score: 0 / 0</div>
-    </div>
-    <button class="mode-btn" id="quizNextBtn">Next word</button>
-  </div>
-
-  <div id="recordView" class="rec-panel" style="display:none;">
-    <h2>Record your voice</h2>
-    <div class="rec-note">Hold the pink button to record, let go to stop. Recordings only last while this tab stays open. If you refresh or close it, you'll need to record again.</div>
-    <div class="mic-error" id="micError">Couldn't access the microphone.</div>
-    <div class="device-row">
-      <label for="deviceSelect" class="level-label">Microphone:</label>
-      <select id="deviceSelect"><option>Loading devices...</option></select>
-    </div>
-    <div class="level-meter-row">
-      <span class="level-label">Mic level:</span>
-      <div class="level-meter"><div class="level-fill" id="levelFill"></div></div>
-    </div>
-    <div class="rec-group-title">Letters</div>
-    <div class="rec-grid" id="letterRecGrid"></div>
-    <div class="rec-group-title">Words</div>
-    <div class="rec-grid" id="wordRecGrid"></div>
-    <button class="done-btn" id="doneBtn">Done recording</button>
-  </div>
-  </div><!-- /subjectReading -->
-
-  <div id="subjectPhonics" style="display:none;">
-    <div class="sub">Tap a letter to hear it, or blend a word</div>
-    <div class="mode-switcher" id="phonicsSwitcher">
-      <button class="mode-pill active" data-pmode="abc">🔤 ABCs</button>
-      <button class="mode-pill" data-pmode="blend">🧩 Blend & Read</button>
-    </div>
-    <div id="abcView">
-      <div class="mode-switcher" id="caseSwitcher">
-        <button class="mode-pill active" data-case="upper">ABC</button>
-        <button class="mode-pill" data-case="lower">abc</button>
+    <section class="lookup" aria-label="Look up any player">
+      <div>
+        <h2>Look up any player</h2>
+        <p>Type any name from any sport. The links open live sold listings and sales history, so those prices are current.</p>
       </div>
-      <div class="letter-grid" id="letterGrid"></div>
-    </div>
-    <div id="blendView" style="display:none;">
-      <div class="build-card">
-        <div class="whole-word" style="color:var(--pink-deep);" id="blendWord">cat</div>
-        <div class="letters" id="blendLetters"></div>
-        <button class="hear-btn" id="blendHearBtn">🔊 Sound it out</button>
+      <div class="lk-row">
+        <select class="sel" id="lk-sport" aria-label="Sport">
+          <option value="">Any sport</option>
+          <option value="baseball">Baseball</option>
+          <option value="nba">Basketball</option>
+          <option value="nfl">Football</option>
+          <option value="nhl">Hockey</option>
+          <option value="soccer">Soccer</option>
+          <option value="wnba">WNBA</option>
+          <option value="f1">Formula 1</option>
+          <option value="ufc">UFC</option>
+          <option value="golf">Golf</option>
+          <option value="tennis">Tennis</option>
+        </select>
+        <input class="lk-input" id="lk-q" type="search" placeholder="Player name, for example Jayden Daniels" aria-label="Player name" autocomplete="off">
+        <select class="sel" id="lk-type" aria-label="Card type">
+          <option value="">Any card</option>
+          <option value="rookie">Rookie card</option>
+          <option value="auto">Autograph</option>
+          <option value="psa 10">PSA 10</option>
+          <option value="refractor">Refractor</option>
+        </select>
       </div>
-      <div class="nav-row">
-        <button class="nav-btn" id="blendPrevBtn" aria-label="Previous word">&#8592;</button>
-        <div class="dots" id="blendDots"></div>
-        <button class="nav-btn" id="blendNextBtn" aria-label="Next word">&#8594;</button>
-      </div>
-    </div>
-  </div>
+      <div class="lk-links" id="lk-links"></div>
+    </section>
 
-  <div id="subjectMath" style="display:none;">
-    <div class="sub">Tap a topic to practice</div>
-    <div class="mode-switcher" id="mathSwitcher">
-      <button class="mode-pill active" data-mmode="count">🔢 Counting</button>
-      <button class="mode-pill" data-mmode="moreless">⚖️ More/Less</button>
-      <button class="mode-pill" data-mmode="shapes">🔺 Shapes</button>
-      <button class="mode-pill" data-mmode="patterns">🔁 Patterns</button>
-      <button class="mode-pill" data-mmode="addsub">➕ Add/Subtract</button>
-    </div>
+    <div class="tabs" role="tablist" id="tabs" aria-label="Views"></div>
 
-    <div id="countView">
-      <div class="mode-switcher">
-        <button class="mode-pill active" data-countby="1" id="countBy1Btn">Count by 1s</button>
-        <button class="mode-pill" data-countby="10" id="countBy10Btn">Count by 10s</button>
-      </div>
-      <div class="number-grid" id="numberGrid"></div>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="c-star"><span class="sr" hidden>Watch</span></th>
+            <th class="left sortable" data-k="p">Card</th>
+            <th class="sortable" data-k="price">Price</th>
+            <th class="sortable" data-k="chg">Change</th>
+            <th>Grade</th>
+            <th>Print run</th>
+            <th class="left">Signal</th>
+            <th>Sales</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
     </div>
-
-    <div id="morelessView" style="display:none;">
-      <div class="build-card">
-        <div class="build-feedback" id="morelessPrompt">Which group has more?</div>
-        <div class="moreless-row" id="morelessRow"></div>
-      </div>
-      <button class="mode-btn" id="morelessNextBtn">New groups</button>
-    </div>
-
-    <div id="shapesView" style="display:none;">
-      <div class="card-wrap" style="height:340px;">
-        <div class="card" id="shapeCard" style="background: linear-gradient(165deg, var(--sky) 0%, var(--mint) 100%);">
-          <div class="shape-icon" id="shapeIcon"></div>
-          <div class="whole-word" style="color:#fff;" id="shapeName">circle</div>
-          <div class="tap-hint"><span>Tap to hear it</span></div>
-        </div>
-      </div>
-      <div class="nav-row">
-        <button class="nav-btn" id="shapePrevBtn" aria-label="Previous shape">&#8592;</button>
-        <div class="dots" id="shapeDots"></div>
-        <button class="nav-btn" id="shapeNextBtn" aria-label="Next shape">&#8594;</button>
-      </div>
-    </div>
-
-    <div id="patternsView" style="display:none;">
-      <div class="build-card">
-        <div class="pattern-row" id="patternRow"></div>
-        <div class="build-feedback" id="patternFeedback">What comes next?</div>
-        <div class="quiz-grid" id="patternOptions"></div>
-      </div>
-      <button class="mode-btn" id="patternNextBtn">New pattern</button>
-    </div>
-
-    <div id="addsubView" style="display:none;">
-      <div class="build-card">
-        <div class="whole-word" style="color:var(--pink-deep); font-size:32px;" id="addsubProblem">3 + 2 = ?</div>
-        <div class="moreless-row" id="addsubDots"></div>
-        <div class="quiz-grid" id="addsubOptions"></div>
-        <div class="build-feedback" id="addsubFeedback"></div>
-      </div>
-      <button class="mode-btn" id="addsubNextBtn">New problem</button>
-    </div>
-  </div>
-
-  <div id="subjectScience" style="display:none;">
-    <div class="sub">Tap a card to hear about it</div>
-    <div class="mode-switcher" id="scienceSwitcher">
-      <button class="mode-pill active" data-smode="senses">👀 Five Senses</button>
-      <button class="mode-pill" data-smode="weather">☀️ Weather & Seasons</button>
-    </div>
-    <div class="card-wrap" style="height:300px;">
-      <div class="card" id="scienceCard" style="background: linear-gradient(165deg, var(--mint) 0%, var(--sky) 100%);">
-        <div class="shape-icon" id="scienceIcon"></div>
-        <div class="whole-word" style="color:#fff; font-size:32px;" id="scienceName">sight</div>
-        <div class="tap-hint"><span>Tap to hear it</span></div>
-      </div>
-    </div>
-    <div class="nav-row">
-      <button class="nav-btn" id="sciencePrevBtn" aria-label="Previous">&#8592;</button>
-      <div class="dots" id="scienceDots"></div>
-      <button class="nav-btn" id="scienceNextBtn" aria-label="Next">&#8594;</button>
-    </div>
-  </div>
-
-  <div id="subjectWorld" style="display:none;">
-    <div class="sub">Community helpers — tap to hear about them</div>
-    <div class="card-wrap" style="height:300px;">
-      <div class="card" id="worldCard" style="background: linear-gradient(165deg, var(--lavender) 0%, var(--pink) 100%);">
-        <div class="shape-icon" id="worldIcon"></div>
-        <div class="whole-word" style="color:#fff; font-size:28px;" id="worldName">doctor</div>
-        <div class="tap-hint"><span>Tap to hear it</span></div>
-      </div>
-    </div>
-    <div class="nav-row">
-      <button class="nav-btn" id="worldPrevBtn" aria-label="Previous">&#8592;</button>
-      <div class="dots" id="worldDots"></div>
-      <button class="nav-btn" id="worldNextBtn" aria-label="Next">&#8594;</button>
-    </div>
-  </div>
-
-  <footer>Made for kindergarten prep — reading, phonics, math, science &amp; world</footer>
+    <p class="count" id="count"></p>
+    <p class="note">Prices come from sold listings, asking prices, price guides and press coverage from late 2025 to September 2026, so they are not live. Rows labeled est. use a range an outlet reported, and I took the midpoint. An ask is what a seller wants, not what a card sold for. Change is measured against the earlier price named under each percentage, and a dash means I found no earlier price to compare. Signal tags are my reading of the data and not advice. The radar only covers players I researched, so use the look-up for anyone else, and use each row's Sold link to see what that card sells for today.</p>
+  </main>
 </div>
 
 <script>
-/* ---------- decorative floating hearts / stars / sparkles ---------- */
-(function(){
-  const layer = document.getElementById('sparkleLayer');
-  const shapes = ['\u2661','\u2606','\u2727','\u2764\ufe0f','\u2b50'];
-  const colors = ['#FF9EC4','#C9AFFF','#8FD9FF','#FFE28A','#A8F0D2'];
-  const count = window.innerWidth < 500 ? 10 : 16;
-  for(let i=0;i<count;i++){
-    const el = document.createElement('div');
-    el.className = 'floaty';
-    el.textContent = shapes[i % shapes.length];
-    el.style.left = (Math.random()*94) + 'vw';
-    el.style.top = (Math.random()*94) + 'vh';
-    el.style.fontSize = (14 + Math.random()*20) + 'px';
-    el.style.color = colors[i % colors.length];
-    el.style.animationDuration = (10 + Math.random()*10) + 's';
-    el.style.animationDelay = (Math.random()*6) + 's';
-    layer.appendChild(el);
+(function () {
+  function r(p, s, set, card, g, run, auto, price, kind, chg, cn, sig, asof, q, n) {
+    return { p: p, s: s, set: set, card: card, g: g, run: run, auto: auto, price: price, kind: kind, chg: chg, cn: cn, sig: sig, asof: asof, q: q, n: n || '' };
   }
+  var B = 'Baseball', S_ = 'Soccer', FB = 'Football', BK = 'Basketball', HK = 'Hockey', WN = 'WNBA';
+  var ROWS = [
+    // Cam Schlittler
+    r('Cam Schlittler', B, '2025 Bowman Chrome', '1st Auto Refractor', 'Raw', '/499', true, 775, 'last sale', 34.8, '30 days', 'Momentum', 'Jun 27, 2026', 'cam schlittler 2025 bowman chrome 1st auto refractor 499'),
+    r('Cam Schlittler', B, '2025 Bowman Chrome', '1st Auto Refractor', 'PSA 10', '/499', true, 1980, 'last sale', null, '', 'Reference', 'Jun 29, 2026', 'cam schlittler 2025 bowman chrome 1st auto refractor 499 psa 10'),
+    r('Cam Schlittler', B, '2025 Bowman Chrome', '1st Auto Blue Refractor', 'Raw', '/150', true, 474, 'last sale', 38.9, '30 days', 'Momentum', 'Mar 27, 2026', 'cam schlittler 2025 bowman chrome 1st auto blue refractor 150'),
+    r('Cam Schlittler', B, '2025 Bowman Chrome', '1st Auto Blue Refractor', 'PSA 10', '/150', true, 900, 'last sale', null, '', 'Reference', 'Feb 28, 2026', 'cam schlittler 2025 bowman chrome 1st auto blue refractor 150 psa 10'),
+    r('Cam Schlittler', B, '2025 Bowman Chrome', '1st Auto Green Refractor', 'Raw', '/99', true, 700, 'last sale', 133, '30 days', 'Momentum', 'Apr 2, 2026', 'cam schlittler 2025 bowman chrome 1st auto green refractor 99'),
+    r('Cam Schlittler', B, '2025 Bowman Chrome', '1st Auto Green Refractor', 'PSA 10', '/99', true, 3300, 'last sale', null, '', 'Reference', 'Apr 2, 2026', 'cam schlittler 2025 bowman chrome 1st auto green refractor 99 psa 10'),
+    r('Cam Schlittler', B, '2025 Bowman Chrome Sapphire', '1st Auto', 'Raw', '/199', true, 702, 'last sale', 142, '30 days', 'Momentum', 'Apr 10, 2026', 'cam schlittler 2025 bowman chrome sapphire auto 199'),
+    r('Cam Schlittler', B, '2025 Bowman Chrome Sapphire', '1st Auto', 'PSA 10', '/199', true, 1270, 'last sale', null, '', 'Reference', 'Apr 3, 2026', 'cam schlittler 2025 bowman chrome sapphire auto 199 psa 10'),
+    r('Cam Schlittler', B, '2025 Bowman Chrome', '1st Auto Gold Refractor', 'Raw', '/50', true, 3250, 'last sale', 0, '30 days', 'Reference', 'Jun 20, 2026', 'cam schlittler 2025 bowman chrome 1st auto gold refractor 50'),
+    r('Cam Schlittler', B, '2025 Bowman Chrome', '1st Auto Superfractor', 'PSA 10', '1/1', true, 29400, 'last sale', null, '', 'Reference', 'Nov 16, 2025', 'cam schlittler 2025 bowman chrome superfractor psa 10'),
+    r('Cam Schlittler', B, '2025 Topps Now #407', 'MLB Debut / first win', 'Raw', 'Limited', false, 90.74, 'avg of 4 asks', null, '', 'Value', 'Listings', 'cam schlittler 2025 topps now 407'),
+    r('Cam Schlittler', B, '2026 Bowman #53', 'Base rookie', 'Raw', 'Base', false, 8.99, 'ask', null, '', 'Value', 'Listing', 'cam schlittler 2026 bowman 53 rookie'),
+    // Ethan Salas
+    r('Ethan Salas', B, '2023 Bowman Chrome', '1st Auto', 'Raw', 'Base', true, 36, 'last sale', -28, '30 days', 'Cooling', 'Apr 14, 2026', 'ethan salas 2023 bowman chrome 1st auto cpa-ess'),
+    r('Ethan Salas', B, '2023 Bowman Chrome', '1st Auto', 'PSA 10', 'Base', true, 145, 'ask', null, '', 'Speculative', 'Listing', 'ethan salas 2023 bowman chrome 1st auto psa 10'),
+    r('Ethan Salas', B, '2023 Bowman Chrome', '1st Auto Green Refractor', 'Raw', '/99', true, 172.08, 'last sale', -76.8, 'Apr 2024 sale ($742)', 'Speculative', 'Sep 14, 2025', 'ethan salas 2023 bowman chrome 1st auto green refractor 99'),
+    r('Ethan Salas', B, '2023 Bowman Chrome', '1st Auto Refractor', 'Raw', '/499', true, 91.79, 'last sale', null, '', 'Speculative', '2025', 'ethan salas 2023 bowman chrome 1st auto refractor 499'),
+    r('Ethan Salas', B, '2023 Bowman Chrome', '1st Auto Orange Shimmer', 'Raw', '/25', true, 1500, 'last sale', -63.4, 'Sep 2023 sale ($4,100)', 'Cooling', 'Jan 15, 2024', 'ethan salas 2023 bowman chrome 1st auto orange shimmer 25'),
+    // Ben Rice
+    r('Ben Rice', B, '2024 Bowman Chrome', '1st Bowman #BCP-186', 'PSA 9', 'Base', false, 33.19, 'avg of 5 sales', null, '', 'Value', 'Price guide', 'ben rice 2024 bowman chrome 1st bcp-186 psa 9'),
+    r('Ben Rice', B, '2024 Bowman Chrome', '1st Bowman #BCP-186', 'PSA 10', 'Base', false, 37.99, 'ask', null, '', 'Value', 'Listing', 'ben rice 2024 bowman chrome 1st bcp-186 psa 10'),
+    r('Ben Rice', B, '2024 Bowman Chrome', '1st Bowman Refractor', 'PSA 10', '/499', false, 500, 'ask', null, '', 'Speculative', 'Listing', 'ben rice 2024 bowman chrome 1st refractor 499 psa 10'),
+    r('Ben Rice', B, '2025 Topps Chrome Update', 'Rookie Auto #RA-BR', 'Raw', 'Base', true, 207.5, 'ask', null, '', 'Value', 'Listing', 'ben rice 2025 topps chrome update rookie auto ra-br'),
+    // Lamine Yamal
+    r('Lamine Yamal', S_, '2023-24 Topps Chrome UEFA', 'Rookie #64', 'PSA 10', 'Base', false, 525, 'ask', null, '', 'Reference', 'Listing', 'lamine yamal 2023-24 topps chrome uefa 64 psa 10'),
+    r('Lamine Yamal', S_, '2023-24 Topps Chrome UEFA', 'Rookie #64', 'PSA 9', 'Base', false, 90.56, 'avg of 9 sales', null, '', 'Value', 'Price guide', 'lamine yamal 2023-24 topps chrome uefa 64 psa 9'),
+    r('Lamine Yamal', S_, '2024 Topps Chrome UEFA Euro', 'National Debut #17', 'Raw', 'Base', false, 18.92, 'avg of 8 sales', null, '', 'Value', 'Price guide', 'lamine yamal 2024 topps chrome uefa euro national debut 17'),
+    r('Lamine Yamal', S_, '2024 Topps Chrome UEFA Euro', 'National Debut Refractor', 'PSA 10', 'Refractor', false, 375, 'ask', null, '', 'Reference', 'Jun 6, 2026', 'lamine yamal 2024 topps chrome euro national debut refractor psa 10'),
+    // Pedri
+    r('Pedri', S_, '2020-21 Topps Chrome UCL', 'Rookie #61', 'PSA 10', 'Base', false, 52.74, 'guide price', null, '', 'Value', 'Price guide', 'pedri 2020-21 topps chrome ucl 61 psa 10'),
+    r('Pedri', S_, '2020-21 Topps Chrome UCL Sapphire', 'Rookie #61', 'PSA 10', 'Sapphire', false, 74.9, 'avg of 12 sales', null, '', 'Value', 'Price guide', 'pedri 2020-21 topps chrome sapphire ucl 61 psa 10'),
+    r('Pedri', S_, '2020-21 Topps Chrome UCL Sapphire', 'Aqua Rookie #61', 'PSA 10', '/150', false, 1250, 'tracked price', null, '', 'Reference', 'Card Ladder', 'pedri 2020 topps chrome sapphire aqua 150 psa 10'),
+    r('Pedri', S_, '2020-21 Topps Chrome UEFA', 'Neon Green Rookie Auto', 'PSA 10', '/99', true, 3840, 'last sale', null, '', 'Reference', '2022', 'pedri 2020 topps chrome uefa neon green auto 99 psa 10'),
+    // Arda Guler
+    r('Arda Güler', S_, '2023-24 Topps Chrome UCC', 'Rookie #152', 'PSA 10', 'Base', false, 14.03, 'guide price', null, '', 'Reference', 'Price guide', 'arda guler 2023-24 topps chrome uefa 152 psa 10'),
+    r('Arda Güler', S_, '2024 Topps Chrome UEFA Euro', 'Future Stars Gold #143', 'PSA 10', '/50', false, 399, 'ask', null, '', 'Speculative', 'Listing', 'arda guler 2024 topps chrome uefa euro gold 143 psa 10'),
+    r('Arda Güler', S_, '2023 Topps Chrome', 'Sapphire Yellow #152', 'PSA 10', '/75', false, 149.99, 'ask', null, '', 'Value', 'Listing', 'arda guler 2023 topps chrome sapphire yellow 152 psa 10'),
+    r('Arda Güler', S_, '2025-26 Topps Chrome UCC', 'Chrome Autograph #CA-AR', 'Raw', 'Base auto', true, null, 'no price found', null, '', 'Find it', 'Not tracked', 'arda guler 2025-26 topps chrome uefa auto ca-ar'),
+    // Kylian Mbappe
+    r('Kylian Mbappé', S_, '2017-18 Topps Chrome UCL', 'Rookie #41', 'PSA 10', 'Base', false, 535, 'accepted offer', null, '', 'Reference', 'Listing', 'mbappe 2017-18 topps chrome ucl 41 psa 10'),
+    r('Kylian Mbappé', S_, '2018 Panini Prizm World Cup', 'Rookie #80', 'PSA 10', 'Base', false, 288.5, 'tracked price', 22.9, 'Card Ladder trend', 'Momentum', 'Card Ladder', 'mbappe 2018 panini prizm world cup 80 psa 10'),
+    // Michael Olise
+    r('Michael Olise', S_, '2021-22 Prizm Premier League', 'Rookie #296', 'Raw', 'Base', false, 12.75, 'last sale', null, '', 'Value', 'Jul 10, 2026', 'michael olise 2021-22 prizm premier league 296'),
+    r('Michael Olise', S_, '2021-22 Prizm Premier League', 'Green Wave Rookie #296', 'Raw', 'Numbered', false, 67.73, 'avg of 10 sales', null, '', 'Value', 'Price guide', 'michael olise 2021-22 prizm premier league green wave 296'),
+    r('Michael Olise', S_, '2021-22 Prizm Premier League', 'Purple Rookie #296', 'SGC 10', '/99', false, 325, 'last sale', null, '', 'Reference', 'Mar 30, 2026', 'michael olise 2021-22 prizm premier league purple 99 sgc 10'),
+    r('Michael Olise', S_, '2026 Topps Chrome Bundesliga', 'Gold Mini Diamonds', 'Raw', '/50', false, 125, 'ask', null, '', 'Speculative', 'Listing', 'michael olise 2026 topps chrome bundesliga gold mini diamonds 50'),
+    // Cavan Sullivan
+    r('Cavan Sullivan', S_, '2025 Topps Chrome MLS', 'Rookie Auto #CA-CS', 'Raw', 'Base auto', true, 146.4, 'avg of 11 asks', null, '', 'Speculative', 'Listings', 'cavan sullivan 2025 topps chrome mls auto ca-cs'),
+    r('Cavan Sullivan', S_, '2025 Topps Chrome MLS', 'Purple Refractor Auto', 'Raw', '/75', true, 246.3, 'avg of 9 asks', null, '', 'Speculative', 'Listings', 'cavan sullivan 2025 topps chrome mls purple refractor auto 75'),
+    r('Cavan Sullivan', S_, '2025 Topps Chrome Sapphire MLS', 'Rookie Auto', 'Raw', 'Sapphire', true, 238, 'last sale', null, '', 'Speculative', 'Apr 18, 2026', 'cavan sullivan 2025 topps chrome sapphire mls auto'),
+    r('Cavan Sullivan', S_, '2025 Topps Chrome MLS', 'Rookie Debut Patch Auto', 'n/a', '1/1', true, 324000, 'last sale', 259, 'Jul 2026 record ($90,158)', 'Reference', 'Sep 4, 2026', 'cavan sullivan 2025 topps chrome mls debut patch auto'),
+    // Gilberto Mora
+    r('Gilberto Mora', S_, '2026 Prizm World Cup', 'Silver Wave Rookie #290', 'Raw', 'Parallel', false, 140, 'ask', null, '', 'Speculative', 'Listing', 'gilberto mora 2026 prizm world cup silver wave 290'),
+    r('Gilberto Mora', S_, '2026 Prizm World Cup', 'New Era Rookie', 'Raw', 'Base', false, 14.99, 'ask', null, '', 'Speculative', 'Listing', 'gilberto mora 2026 prizm world cup new era rookie'),
+    r('Gilberto Mora', S_, '2025-26 Donruss Road to World Cup', 'Rated Rookie Diamond #214', 'Raw', 'Parallel', false, 250, 'last sale', null, '', 'Speculative', 'Jul 3, 2026', 'gilberto mora 2025-26 donruss world cup rated rookie diamond 214'),
+    r('Gilberto Mora', S_, '2026 Select World Cup', 'Future Blue Pulsar #17', 'Raw', 'Parallel', false, 35, 'ask', null, '', 'Speculative', 'Listing', 'gilberto mora 2026 select world cup future blue pulsar 17'),
+    // Gianluca Prestianni
+    r('Gianluca Prestianni', S_, '2024-25 Topps Chrome UCC', 'Black Lazer Auto', 'Raw', 'Numbered', true, 49.99, 'ask', null, '', 'Speculative', 'Listing', 'gianluca prestianni 2024-25 topps chrome uefa black lazer auto'),
+    r('Gianluca Prestianni', S_, '2024-25 Topps Chrome UCC', 'Green RayWave Rookie', 'Raw', '/125', false, 35, 'ask', null, '', 'Speculative', 'Listing', 'gianluca prestianni 2024-25 topps chrome uefa green raywave 125'),
+    r('Gianluca Prestianni', S_, '2024-25 Topps Chrome UCC', 'Green Youthquake Rookie', 'Raw', '/99', false, 10.45, 'avg of 2 asks', null, '', 'Speculative', 'Listings', 'gianluca prestianni 2024-25 topps chrome uefa green youthquake 99'),
+    // Football
+    r('Fernando Mendoza', FB, '2025 Bowman Chrome University', 'Auto Refractor #BCA-FME', 'Raw', '/299', true, 259, 'last sale', null, '', 'Momentum', 'Nov 5, 2025', 'fernando mendoza 2025 bowman chrome university auto refractor 299', 'Pre-draft autos were reported near $400 raw by May 2026'),
+    r('Ty Simpson', FB, '2025 Bowman Chrome University', 'Auto Refractor', 'Raw', '/299', true, 60, 'last sale', null, '', 'Speculative', 'Nov 8, 2025', 'ty simpson 2025 bowman chrome university auto refractor 299', 'Smaller gains than Mendoza'),
+    r('Dante Moore', FB, '2023 Bowman Chrome University', 'Auto #133', 'Raw', 'Base auto', true, 84.99, 'last sale', null, '', 'Speculative', 'Nov 5, 2025', 'dante moore 2023 bowman chrome university auto 133'),
+    r('Jeremiyah Love', FB, '2024 Bowman Chrome University', 'Auto #PA-JLO', 'PSA 10', 'Base auto', true, 225, 'last sale', null, '', 'Speculative', 'Nov 4, 2025', 'jeremiyah love 2024 bowman chrome university auto pa-jlo psa 10'),
+    r('Jordyn Tyson', FB, '2025 Bowman Chrome University', 'Auto', 'Raw', 'Base auto', true, 51, 'last sale', null, '', 'Speculative', 'Nov 7, 2025', 'jordyn tyson 2025 bowman chrome university auto', 'Raw autos were projected to reach $500+ after the draft'),
+    r('Drake Maye', FB, '2024 Panini Prizm', 'Base Rookie', 'PSA 10', 'Base', false, null, 'no price found', 291, 'since start of 2025 season', 'Momentum', 'Nov 2025 article', 'drake maye 2024 panini prizm rookie psa 10'),
+    r('Drake Maye', FB, '2024 Topps Chrome', 'SuperFractor Rookie', 'PSA 10', '1/1', false, 25600, 'sale', null, '', 'Reference', 'Late 2025', 'drake maye 2024 topps chrome superfractor psa 10'),
+    r('Drake Maye', FB, '2024 Panini National Treasures', 'NFL Shield Patch Rookie', 'PSA 9', '1/1', false, 164700, 'last sale', null, '', 'Reference', 'Nov 2025', 'drake maye 2024 national treasures shield patch psa 9'),
+    // Basketball
+    r('Cooper Flagg', BK, '2025 Topps Chrome', 'Rookie Auto', 'Raw', 'Base auto', true, 1100, 'raw autos', 50, 'since opening night', 'Momentum', '2026 article', 'cooper flagg 2025 topps chrome rookie auto', 'Article projected $1,500 by summer 2026'),
+    r('Cooper Flagg', BK, '2025 Topps Chrome', 'Refractor Rookie', 'Raw', 'Refractor', false, 160, 'est. midpoint of $140-$180', null, '', 'Value', 'Apr 2026', 'cooper flagg 2025 topps chrome refractor'),
+    r('Cooper Flagg', BK, '2025 Topps Chrome', 'Refractor Rookie', 'PSA 10', 'Refractor', false, 450, 'est. floor ($450+)', null, '', 'Reference', 'Apr 2026', 'cooper flagg 2025 topps chrome refractor psa 10'),
+    r('Kon Knueppel', BK, '2025 Topps Chrome', 'Refractor Rookie Auto', 'Raw', 'Refractor', true, 447, 'price', 49, 'from $300, through Feb 2026', 'Momentum', 'Feb 2026', 'kon knueppel 2025 topps chrome refractor auto'),
+    r('Ace Bailey', BK, '2025 Topps Chrome', 'Rookie', 'Raw', 'Base', false, 175, 'raw copies', 50, '2026 article gain', 'Momentum', '2026 article', 'ace bailey 2025 topps chrome rookie'),
+    r('Dylan Harper', BK, '2025 Topps Chrome', 'Rookie Auto', 'Raw', 'Base auto', true, 1100, 'raw autos', null, '', 'Speculative', '2026 article', 'dylan harper 2025 topps chrome rookie auto'),
+    r('Victor Wembanyama', BK, '2023-24 Panini Prizm', 'White Sparkle #136', 'PSA 10', 'Parallel', false, 81000, 'sale', 165, 'from $30,600 in Feb 2026', 'Momentum', 'Jun 2026', 'victor wembanyama 2023-24 prizm white sparkle 136 psa 10'),
+    r('Victor Wembanyama', BK, '2023-24 Panini Prizm', 'Silver #136', 'PSA 10', 'Parallel', false, 450, 'est. midpoint of $400-$500', null, '', 'Value', 'Jul 2026', 'victor wembanyama 2023-24 prizm silver 136 psa 10'),
+    r('Victor Wembanyama', BK, '2023-24 Panini Prizm', 'Gold', 'PSA 10', '/10', false, 11500, 'est. midpoint of $8K-$15K', null, '', 'Reference', 'Jul 2026', 'victor wembanyama 2023-24 prizm gold 10 psa 10'),
+    r('Victor Wembanyama', BK, '2023-24 Donruss', 'Rated Rookie #220', 'PSA 10', 'Base', false, 100, 'est. midpoint of $80-$120', null, '', 'Value', 'Jul 2026', 'victor wembanyama 2023-24 donruss rated rookie 220 psa 10'),
+    r('Victor Wembanyama', BK, '2023-24 Donruss Optic', 'Rated Rookie #225', 'PSA 10', 'Base', false, 160, 'est. midpoint of $120-$200', null, '', 'Value', 'Jul 2026', 'victor wembanyama 2023-24 donruss optic rated rookie 225 psa 10'),
+    r('Victor Wembanyama', BK, '2023-24 Panini Prizm', 'Black', 'PSA 10', '1/1', false, 5110000, 'last sale', null, '', 'Reference', 'May 26, 2026', 'victor wembanyama 2023-24 prizm black psa 10', 'Reported as the fourth-highest NBA card sale'),
+    // Hockey
+    r('Macklin Celebrini', HK, '2024-25 Upper Deck', 'Young Guns #451', 'PSA 10', 'Base', false, 2025, 'auction sale', null, '', 'Reference', '2025-26 season', 'macklin celebrini 2024-25 upper deck young guns 451 psa 10', 'The same article says typical PSA 10 copies sell for a few hundred'),
+    r('Macklin Celebrini', HK, '2024-25 Upper Deck', 'Young Guns #451', 'PSA 9', 'Base', false, 1575, 'auction sale', null, '', 'Reference', '2025-26 season', 'macklin celebrini 2024-25 upper deck young guns 451 psa 9'),
+    r('Macklin Celebrini', HK, '2024-25 Upper Deck', 'Future Watch Auto', 'Raw', '/999', true, 2750, 'est. midpoint of $2.5K-$3K', null, '', 'Reference', '2025-26 season', 'macklin celebrini 2024-25 upper deck future watch auto 999'),
+    r('Macklin Celebrini', HK, '2024-25 The Cup', 'Gold Rookie Patch Auto', 'n/a', '/24', true, 37000, 'last sale', null, '', 'Reference', 'Dec 2025', 'macklin celebrini 2024-25 the cup gold rookie patch auto 24'),
+    r('Quinn Hughes', HK, '2019 Upper Deck', 'Young Guns', 'PSA 10', 'Base', false, 253, 'price', 28, '2026 article gain', 'Momentum', '2026 article', 'quinn hughes 2019 upper deck young guns psa 10'),
+    // WNBA
+    r('Paige Bueckers', WN, '2025 Panini Flawless', 'Logowoman Patch Auto Platinum', 'n/a', '1/1', true, 249750, 'last sale', null, '', 'Reference', 'Aug 27, 2026', 'paige bueckers 2025 panini flawless logowoman patch auto platinum', 'Top WNBA card sale of the 2026 season'),
+    r('Caitlin Clark', WN, '2024 Panini Select', 'Autographed Memorabilia Gold Prizm', 'PSA 10', '/10', true, 24500, 'last sale', null, '', 'Reference', 'Feb 2026', 'caitlin clark 2024 panini select autographed memorabilia gold prizm 10 psa 10'),
+    r('Caitlin Clark', WN, '2024 Panini Royalty', 'National Treasures RPA', 'PSA 10', '/49', true, 19500, 'last sale', null, '', 'Reference', 'Feb 2026', 'caitlin clark 2024 panini royalty national treasures rpa 49 psa 10'),
+    r('Caitlin Clark', WN, '2024 Panini Royalty', 'Kaboom! #1', 'PSA 10', 'Insert', false, 15500, 'last sale', null, '', 'Reference', 'Mar 2026', 'caitlin clark 2024 panini royalty kaboom 1 psa 10'),
+    r('Angel Reese', WN, '2024 Panini Royalty', 'Kaboom! Green', 'n/a', '1/1', false, 21000, 'last sale', null, '', 'Reference', 'Jan 2026', 'angel reese 2024 panini royalty kaboom green'),
+    // More baseball
+    r('Shohei Ohtani', B, '2018 Bowman Chrome', 'Rookie #1', 'PSA 10', 'Base', false, 4150, 'est. PSA 10 value', null, '', 'Reference', 'Apr 2026', 'shohei ohtani 2018 bowman chrome 1 psa 10', 'PSA 10 population about 5,100'),
+    r('Shohei Ohtani', B, '2018 Topps Chrome', 'Rookie #150', 'PSA 10', 'Base', false, 1045, 'est. PSA 10 value', null, '', 'Reference', 'Apr 2026', 'shohei ohtani 2018 topps chrome 150 psa 10', 'PSA 10 population about 15,800'),
+    r('Shohei Ohtani', B, '2018 Donruss Optic', 'Rated Rookie #176', 'PSA 10', 'Base', false, 415, 'est. PSA 10 value', null, '', 'Reference', 'Apr 2026', 'shohei ohtani 2018 donruss optic 176 psa 10', 'PSA 10 population about 800'),
+    r('Roman Anthony', B, '2025 Bowman Chrome', '1st Auto', 'Raw', 'Base auto', true, 45, 'raw price', null, '', 'Value', '2026 article', 'roman anthony 2025 bowman chrome 1st auto'),
+    r('Jac Caglianone', B, '2025 Bowman Chrome', '1st Auto', 'Raw', 'Base auto', true, 90, 'raw price', null, '', 'Value', '2026 article', 'jac caglianone 2025 bowman chrome 1st auto', 'Article projected $150'),
+    r('Jac Caglianone', B, '2025 Bowman Chrome', '1st Auto Purple Refractor', 'Raw', '/250', true, 100, 'raw price', null, '', 'Value', '2026 article', 'jac caglianone 2025 bowman chrome 1st auto purple refractor 250'),
+    r('Carlos Lagrange', B, '2025 Bowman Chrome', 'Prospect Auto', 'Raw', 'Base auto', true, 90, 'raw price', 100, 'recent doubling, per article', 'Momentum', '2026 article', 'carlos lagrange 2025 bowman chrome prospect auto'),
+    r('Aidan Miller', B, '2024 Bowman Chrome', 'Prospect Auto', 'Raw', 'Base auto', true, 90, 'raw price', null, '', 'Value', '2026 article', 'aidan miller 2024 bowman chrome prospect auto'),
+    r('Konnor Griffin', B, '2025 Bowman Chrome', 'Prospect Auto True Blue Refractor #CPA-KG', 'Raw', '/150', true, 249.99, 'current bid', null, '', 'Speculative', 'Listing', 'konnor griffin 2025 bowman chrome prospect auto blue refractor 150'),
+    r('Munetaka Murakami', B, '2026 Bowman Chrome', 'Rookie Autograph', 'Raw', 'Base auto', true, 438.5, 'est. midpoint of $257-$620', null, '', 'Speculative', 'Early 2026 auctions', 'munetaka murakami 2026 bowman chrome rookie auto'),
+    r('Seong-Jun Kim', B, '2026 Bowman Chrome', 'Red Refractor', 'n/a', '/5', false, 2000, 'release-day sale', null, '', 'Reference', 'May 13, 2026', 'seong-jun kim 2026 bowman chrome red refractor 5')
+  ];
+
+  var SIG = { 'Momentum': 'up', 'Cooling': 'down', 'Value': 'val', 'Speculative': 'warn', 'Reference': 'ref', 'Find it': 'find' };
+  var TABS = [['all', 'All'], ['rising', 'Rising'], ['cooling', 'Cooling'], ['value', 'Value'], ['watch', 'Watchlist']];
+  var PRICES = [['any', 'Any'], ['u100', 'Under $100'], ['mid', '$100 to $1,000'], ['o1k', 'Over $1,000']];
+  var GRADES = ['Any', 'Raw', 'PSA 9', 'PSA 10', 'SGC 10'];
+
+  var state = { sport: 'All', player: 'All', price: 'any', grade: 'Any', auto: false, tab: 'all', q: '', sort: 'chg', dir: -1 };
+
+  function loadWatch() {
+    try { return new Set(JSON.parse(localStorage.getItem('cardradar.watch') || '[]')); } catch (e) { return new Set(); }
+  }
+  function saveWatch() {
+    try { localStorage.setItem('cardradar.watch', JSON.stringify(Array.from(watch))); } catch (e) { /* storage unavailable */ }
+  }
+  var watch = loadWatch();
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; });
+  }
+  function key(x) { return [x.p, x.set, x.card, x.g].join('|'); }
+  function money(n) {
+    if (n == null) return 'n/a';
+    return '$' + n.toLocaleString('en-US', { minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2 });
+  }
+  function hue(name) {
+    var h = 0;
+    for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % 360;
+    return h;
+  }
+  function initials(name) {
+    return name.split(' ').map(function (w) { return w.charAt(0); }).slice(0, 2).join('');
+  }
+  function priceOk(x) {
+    if (state.price === 'any') return true;
+    if (x.price == null) return false;
+    if (state.price === 'u100') return x.price < 100;
+    if (state.price === 'mid') return x.price >= 100 && x.price <= 1000;
+    return x.price > 1000;
+  }
+
+  var SPORTS = ['All', 'Baseball', 'Basketball', 'Football', 'Hockey', 'Soccer', 'WNBA'];
+  var players = ['All'];
+  ROWS.map(function (x) { return x.p; }).filter(function (p, i, a) { return a.indexOf(p) === i; })
+    .sort(function (a, b) { return a.localeCompare(b); })
+    .forEach(function (p) { players.push(p); });
+
+  function chipsHtml(opts, cur) {
+    return opts.map(function (o) {
+      return '<button type="button" class="chip" data-v="' + esc(o[0]) + '" aria-pressed="' + (cur === o[0]) + '">' + esc(o[1]) + '</button>';
+    }).join('');
+  }
+  function bindChips(id, k) {
+    document.getElementById(id).addEventListener('click', function (e) {
+      var b = e.target.closest('.chip');
+      if (!b) return;
+      state[k] = b.getAttribute('data-v');
+      render();
+    });
+  }
+  bindChips('f-sport', 'sport');
+  document.getElementById('f-player').addEventListener('change', function (e) { state.player = e.target.value; render(); });
+  bindChips('f-price', 'price');
+  bindChips('f-grade', 'grade');
+
+  document.getElementById('f-auto').addEventListener('change', function (e) { state.auto = e.target.checked; render(); });
+  document.getElementById('q').addEventListener('input', function (e) { state.q = e.target.value.trim().toLowerCase(); render(); });
+  document.getElementById('tabs').addEventListener('click', function (e) {
+    var b = e.target.closest('.tab');
+    if (!b) return;
+    state.tab = b.getAttribute('data-v');
+    render();
+  });
+  document.querySelector('thead').addEventListener('click', function (e) {
+    var th = e.target.closest('th.sortable');
+    if (!th) return;
+    var k = th.getAttribute('data-k');
+    if (state.sort === k) state.dir = -state.dir;
+    else { state.sort = k; state.dir = k === 'p' ? 1 : -1; }
+    render();
+  });
+  document.getElementById('rows').addEventListener('click', function (e) {
+    var b = e.target.closest('.star');
+    if (!b) return;
+    var k = b.getAttribute('data-k');
+    if (watch.has(k)) watch.delete(k); else watch.add(k);
+    saveWatch();
+    render();
+  });
+
+  function visible() {
+    var rows = ROWS.filter(function (x) {
+      if (state.sport !== 'All' && x.s !== state.sport) return false;
+      if (state.player !== 'All' && x.p !== state.player) return false;
+      if (state.grade !== 'Any' && x.g !== state.grade) return false;
+      if (state.auto && !x.auto) return false;
+      if (!priceOk(x)) return false;
+      if (state.q && (x.p + ' ' + x.set + ' ' + x.card).toLowerCase().indexOf(state.q) < 0) return false;
+      if (state.tab === 'rising' && !(x.chg != null && x.chg > 0)) return false;
+      if (state.tab === 'cooling' && !(x.chg != null && x.chg < 0)) return false;
+      if (state.tab === 'value' && x.sig !== 'Value') return false;
+      if (state.tab === 'watch' && !watch.has(key(x))) return false;
+      return true;
+    });
+    var k = state.sort, d = state.dir;
+    rows.sort(function (a, b) {
+      if (k === 'p') return d * a.p.localeCompare(b.p) || (b.price || 0) - (a.price || 0);
+      var av = a[k], bv = b[k];
+      if (av == null && bv == null) return (b.price || 0) - (a.price || 0);
+      if (av == null) return 1;
+      if (bv == null) return -1;
+      return d * (av - bv) || (b.price || 0) - (a.price || 0);
+    });
+    return rows;
+  }
+
+  function changeHtml(x) {
+    if (x.chg == null) return '<span class="flat num">–</span>';
+    var cls = x.chg > 0 ? 'up' : (x.chg < 0 ? 'down' : 'flat');
+    var txt = (x.chg > 0 ? '+' : '') + x.chg.toFixed(1) + '%';
+    return '<span class="' + cls + ' num">' + txt + '</span><span class="small">' + esc(x.cn) + '</span>';
+  }
+
+  function render() {
+    document.getElementById('f-sport').innerHTML = chipsHtml(SPORTS.map(function (s) { return [s, s]; }), state.sport);
+    document.getElementById('f-player').innerHTML = players.map(function (p) {
+      return '<option value="' + esc(p) + '"' + (p === state.player ? ' selected' : '') + '>' + (p === 'All' ? 'All players' : esc(p)) + '</option>';
+    }).join('');
+    document.getElementById('f-price').innerHTML = chipsHtml(PRICES, state.price);
+    document.getElementById('f-grade').innerHTML = chipsHtml(GRADES.map(function (g) { return [g, g]; }), state.grade);
+    document.getElementById('tabs').innerHTML = TABS.map(function (t) {
+      var label = t[0] === 'watch' ? 'Watchlist (' + watch.size + ')' : t[1];
+      return '<button type="button" role="tab" class="tab" data-v="' + t[0] + '" aria-selected="' + (state.tab === t[0]) + '">' + label + '</button>';
+    }).join('');
+
+    document.querySelectorAll('th.sortable').forEach(function (th) {
+      th.setAttribute('aria-sort', th.getAttribute('data-k') === state.sort ? (state.dir > 0 ? 'ascending' : 'descending') : 'none');
+    });
+
+    var rows = visible();
+    var body = document.getElementById('rows');
+    if (!rows.length) {
+      var msg = state.tab === 'watch' ? 'Your watchlist is empty. Star a card to add it here.' : 'No cards on the radar match these filters. Clear a filter or change the search.';
+      if (state.q && state.tab !== 'watch') {
+        msg += ' <a class="sold" href="https://www.ebay.com/sch/i.html?_nkw=' + encodeURIComponent(state.q) + '&amp;LH_Sold=1&amp;LH_Complete=1" target="_blank" rel="noopener">Search eBay sold for “' + esc(state.q) + '” ↗</a>';
+      }
+      body.innerHTML = '<tr><td colspan="8" class="empty left">' + msg + '</td></tr>';
+    } else {
+      body.innerHTML = rows.map(function (x) {
+        var k = key(x);
+        var on = watch.has(k);
+        var href = 'https://www.ebay.com/sch/i.html?_nkw=' + encodeURIComponent(x.q) + '&LH_Sold=1&LH_Complete=1';
+        return '<tr>' +
+          '<td class="c-star"><button type="button" class="star" data-k="' + esc(k) + '" aria-pressed="' + on + '" aria-label="' + (on ? 'Remove ' : 'Add ') + esc(x.p + ' ' + x.card) + (on ? ' from watchlist' : ' to watchlist') + '">' + (on ? '★' : '☆') + '</button></td>' +
+          '<td class="left"><div class="cardcell"><div class="av" style="background:hsl(' + hue(x.p) + ' 42% 34%)">' + esc(initials(x.p)) + '</div>' +
+          '<div class="who"><b>' + esc(x.p) + '</b><span>' + esc(x.card) + '</span><span>' + esc(x.set) + ' · ' + esc(x.s) + '</span></div></div></td>' +
+          '<td><span class="num">' + money(x.price) + '</span><span class="small">' + esc(x.kind) + ' · ' + esc(x.asof) + '</span></td>' +
+          '<td>' + changeHtml(x) + '</td>' +
+          '<td class="num">' + esc(x.g) + '</td>' +
+          '<td class="num">' + esc(x.run) + '</td>' +
+          '<td class="left"><span class="pill ' + SIG[x.sig] + '">' + esc(x.sig) + '</span>' + (x.n ? '<span class="signote">' + esc(x.n) + '</span>' : '') + '</td>' +
+          '<td><a class="sold" href="' + href + '" target="_blank" rel="noopener">Sold ↗</a></td>' +
+          '</tr>';
+      }).join('');
+    }
+    document.getElementById('count').textContent = 'Showing ' + rows.length + ' of ' + ROWS.length + ' cards on the radar';
+  }
+
+  var lkQ = document.getElementById('lk-q');
+  var lkSport = document.getElementById('lk-sport');
+  var lkType = document.getElementById('lk-type');
+  function updateLookup() {
+    var name = lkQ.value.trim();
+    var q = [name, lkSport.value, lkType.value].filter(Boolean).join(' ');
+    var enc = encodeURIComponent(q);
+    var links = [
+      ['eBay sold', 'https://www.ebay.com/sch/i.html?_nkw=' + enc + '&LH_Sold=1&LH_Complete=1&_sop=13'],
+      ['eBay for sale', 'https://www.ebay.com/sch/i.html?_nkw=' + enc],
+      ['SportsCardsPro', 'https://www.sportscardspro.com/search-products?q=' + enc + '&type=prices'],
+      ['PSA sales history', 'https://www.psacard.com/auctionprices/search?q=' + enc]
+    ];
+    var html = links.map(function (l) {
+      return name
+        ? '<a href="' + esc(l[1]) + '" target="_blank" rel="noopener">' + esc(l[0]) + ' ↗</a>'
+        : '<a class="off" aria-disabled="true" tabindex="-1">' + esc(l[0]) + '</a>';
+    }).join('');
+    html += '<span class="lk-hint">' + (name ? 'Searching for “' + esc(q) + '”' : 'Type a name to turn on the links.') + '</span>';
+    document.getElementById('lk-links').innerHTML = html;
+  }
+  lkQ.addEventListener('input', updateLookup);
+  lkSport.addEventListener('change', updateLookup);
+  lkType.addEventListener('change', updateLookup);
+  updateLookup();
+
+  render();
 })();
-
-const LISTS = {
-  "1R": ["the", "a", "and", "are"],
-  "2R": ["to", "is", "his", "as"],
-  "3O": ["has", "was", "we", "she"],
-  "4O": ["he", "me", "be", "i"],
-  "5Y": ["you", "your", "or", "for"],
-  "6Y": ["it", "all", "in", "by"],
-  "7G": ["my", "with", "that", "from"],
-  "8G": ["have", "of", "no", "they"],
-  "9B": ["on", "one", "into", "play"],
-  "10B": ["go", "said", "were", "do"],
-  "11P": ["does", "who", "what", "when"],
-  "13P": ["try", "put", "too", "two"],
-  "14P": ["very", "come", "some"]
-};
-
-const uniqueLetters = [];
-Object.values(LISTS).flat().forEach(word => {
-  word.split('').forEach(ch => {
-    if(!uniqueLetters.includes(ch)) uniqueLetters.push(ch);
-  });
-});
-const allWords = Object.values(LISTS).flat();
-
-let currentList = "1R";
-let currentIndex = 0;
-let knownWords = {};
-let currentMode = 'practice';
-let quizScore = { correct: 0, total: 0 };
-
-function shuffleArr(arr){
-  const a = arr.slice();
-  for(let i = a.length - 1; i > 0; i--){
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-const recordings = {};
-let mediaStream = null;
-let audioCtx = null;
-let sourceNode = null;
-let processorNode = null;
-let currentBuffers = [];
-let isRecording = false;
-let activeRecKey = null;
-
-const tabsEl = document.getElementById('tabs');
-const badgeEl = document.getElementById('badge');
-const lettersEl = document.getElementById('letters');
-const makesLineEl = document.getElementById('makesLine');
-const wholeWordEl = document.getElementById('wholeWord');
-const cardEl = document.getElementById('card');
-const dotsEl = document.getElementById('dots');
-const starsRowEl = document.getElementById('starsRow');
-const hintText = document.getElementById('hintText');
-const subtitle = document.getElementById('subtitle');
-
-const toggleModeBtn = document.getElementById('toggleModeBtn');
-const practiceView = document.getElementById('practiceView');
-const recordView = document.getElementById('recordView');
-const letterRecGrid = document.getElementById('letterRecGrid');
-const wordRecGrid = document.getElementById('wordRecGrid');
-const micError = document.getElementById('micError');
-const doneBtn = document.getElementById('doneBtn');
-
-function buildTabs(){
-  tabsEl.innerHTML = '';
-  Object.keys(LISTS).forEach(key => {
-    const btn = document.createElement('button');
-    btn.className = 'tab' + (key === currentList ? ' active' : '');
-    btn.textContent = key;
-    btn.onclick = () => {
-      currentList = key;
-      currentIndex = 0;
-      refreshCurrentMode();
-    };
-    tabsEl.appendChild(btn);
-  });
-}
-
-function refreshCurrentMode(){
-  if(currentMode === 'practice') render();
-  else if(currentMode === 'build') loadBuildWord();
-  else if(currentMode === 'quiz') loadQuizWord();
-}
-
-function buildDots(){
-  dotsEl.innerHTML = '';
-  LISTS[currentList].forEach((w, i) => {
-    const d = document.createElement('div');
-    d.className = 'dot' + (i === currentIndex ? ' current' : '') + (knownWords[currentList+w] && i !== currentIndex ? ' known' : '');
-    d.onclick = () => { currentIndex = i; render(); };
-    dotsEl.appendChild(d);
-  });
-}
-
-function buildStars(){
-  starsRowEl.innerHTML = '';
-  const total = LISTS[currentList].length;
-  const knownCount = LISTS[currentList].filter(w => knownWords[currentList+w]).length;
-  const label = document.createElement('span');
-  label.textContent = knownCount + ' of ' + total + ' heard ';
-  starsRowEl.appendChild(label);
-  for(let i=0;i<total;i++){
-    const s = document.createElement('span');
-    s.className = 'star';
-    s.textContent = i < knownCount ? '\u2b50' : '\u2606';
-    starsRowEl.appendChild(s);
-  }
-}
-
-function render(){
-  buildTabs();
-  const word = LISTS[currentList][currentIndex];
-  badgeEl.textContent = currentList;
-  wholeWordEl.textContent = word;
-  makesLineEl.textContent = 'makes';
-  makesLineEl.style.visibility = word.length > 1 ? 'visible' : 'hidden';
-  makesLineEl.classList.remove('lit');
-  wholeWordEl.classList.remove('lit');
-  hintText.textContent = 'Tap to hear it';
-
-  lettersEl.innerHTML = '';
-  word.split('').forEach(ch => {
-    const tile = document.createElement('div');
-    tile.className = 'letter-tile';
-    tile.textContent = ch;
-    lettersEl.appendChild(tile);
-  });
-
-  buildDots();
-  buildStars();
-}
-
-let speaking = false;
-
-function speakSynth(text, rate){
-  rate = rate || 0.85;
-  return new Promise(resolve => {
-    if(!('speechSynthesis' in window)){ resolve(); return; }
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.rate = rate;
-    utter.pitch = 1.05;
-    utter.onend = resolve;
-    utter.onerror = resolve;
-    window.speechSynthesis.speak(utter);
-  });
-}
-
-function playRecording(key){
-  return new Promise(resolve => {
-    const url = recordings[key];
-    if(!url){ resolve(false); return; }
-    const audio = new Audio(url);
-    audio.onended = () => resolve(true);
-    audio.onerror = () => resolve(false);
-    audio.play().catch(() => resolve(false));
-  });
-}
-
-async function playSound(key, fallbackText){
-  const played = await playRecording(key);
-  if(!played){
-    await speakSynth(fallbackText);
-  }
-}
-
-async function playWord(){
-  if(speaking) return;
-  speaking = true;
-  hintText.textContent = 'Listening...';
-
-  const word = LISTS[currentList][currentIndex];
-  const tiles = lettersEl.querySelectorAll('.letter-tile');
-
-  window.speechSynthesis.cancel();
-
-  for(let i=0;i<word.length;i++){
-    tiles.forEach(t => t.classList.remove('lit'));
-    tiles[i].classList.add('lit');
-    await playSound('letter:' + word[i], word[i]);
-    await new Promise(r => setTimeout(r, 100));
-  }
-  tiles.forEach(t => t.classList.remove('lit'));
-
-  wholeWordEl.classList.add('lit');
-  if(word.length > 1){
-    makesLineEl.classList.add('lit');
-    await speakSynth('makes');
-    await playSound('word:' + word, word);
-  }
-
-  knownWords[currentList + word] = true;
-  buildDots();
-  buildStars();
-
-  hintText.textContent = 'Tap to hear it again';
-  speaking = false;
-}
-
-cardEl.addEventListener('click', playWord);
-
-document.getElementById('prevBtn').onclick = () => {
-  currentIndex = (currentIndex - 1 + LISTS[currentList].length) % LISTS[currentList].length;
-  render();
-};
-document.getElementById('nextBtn').onclick = () => {
-  currentIndex = (currentIndex + 1) % LISTS[currentList].length;
-  render();
-};
-
-/* ---------- Build mode: assemble the word from letter tiles ---------- */
-
-let buildTarget = '';
-let buildAnswer = [];
-let buildTileEls = [];
-
-function renderBuildBlanks(){
-  const row = document.getElementById('blanksRow');
-  row.innerHTML = '';
-  for(let i = 0; i < buildTarget.length; i++){
-    const slot = document.createElement('div');
-    slot.className = 'blank-slot' + (buildAnswer[i] ? ' filled' : '');
-    slot.textContent = buildAnswer[i] || '';
-    slot.onclick = () => {
-      if(buildAnswer.length === 0) return;
-      buildAnswer.pop();
-      renderBuildBlanks();
-      reEnableLastUsedTile();
-    };
-    row.appendChild(slot);
-  }
-}
-
-function reEnableLastUsedTile(){
-  for(let i = buildTileEls.length - 1; i >= 0; i--){
-    if(buildTileEls[i].btn.disabled){
-      buildTileEls[i].btn.disabled = false;
-      break;
-    }
-  }
-}
-
-function loadBuildWord(){
-  buildTabs();
-  const word = LISTS[currentList][currentIndex];
-  buildTarget = word;
-  buildAnswer = [];
-  document.getElementById('buildFeedback').textContent = '';
-
-  const targetLetters = word.split('');
-  const decoyPool = uniqueLetters.filter(l => !targetLetters.includes(l));
-  const decoys = shuffleArr(decoyPool).slice(0, Math.min(2, decoyPool.length));
-  const tileLetters = shuffleArr([...targetLetters, ...decoys]);
-
-  const bank = document.getElementById('tileBank');
-  bank.innerHTML = '';
-  buildTileEls = [];
-  tileLetters.forEach(letter => {
-    const btn = document.createElement('button');
-    btn.className = 'letter-tile-btn';
-    btn.textContent = letter;
-    btn.onclick = () => {
-      if(buildAnswer.length >= buildTarget.length) return;
-      buildAnswer.push(letter);
-      btn.disabled = true;
-      renderBuildBlanks();
-      if(buildAnswer.length === buildTarget.length){
-        checkBuildAnswer();
-      }
-    };
-    buildTileEls.push({ btn, letter });
-    bank.appendChild(btn);
-  });
-
-  renderBuildBlanks();
-  buildDotsRow();
-}
-
-function buildDotsRow(){
-  const dotsRow = document.getElementById('buildDots');
-  dotsRow.innerHTML = '';
-  LISTS[currentList].forEach((w, i) => {
-    const d = document.createElement('div');
-    d.className = 'dot' + (i === currentIndex ? ' current' : '');
-    d.onclick = () => { currentIndex = i; loadBuildWord(); };
-    dotsRow.appendChild(d);
-  });
-}
-
-async function checkBuildAnswer(){
-  const feedback = document.getElementById('buildFeedback');
-  if(buildAnswer.join('') === buildTarget){
-    feedback.textContent = 'Yes! 🌟';
-    feedback.style.color = '#4fae7f';
-    await playSound('word:' + buildTarget, buildTarget);
-    setTimeout(() => {
-      currentIndex = (currentIndex + 1) % LISTS[currentList].length;
-      loadBuildWord();
-    }, 900);
-  }else{
-    feedback.textContent = 'Try again!';
-    feedback.style.color = '#c14a63';
-    setTimeout(() => {
-      buildTileEls.forEach(t => t.btn.disabled = false);
-      buildAnswer = [];
-      renderBuildBlanks();
-      feedback.textContent = '';
-    }, 900);
-  }
-}
-
-document.getElementById('buildHearBtn').onclick = () => playSound('word:' + buildTarget, buildTarget);
-document.getElementById('buildClearBtn').onclick = () => {
-  buildTileEls.forEach(t => t.btn.disabled = false);
-  buildAnswer = [];
-  renderBuildBlanks();
-  document.getElementById('buildFeedback').textContent = '';
-};
-document.getElementById('buildPrevBtn').onclick = () => {
-  currentIndex = (currentIndex - 1 + LISTS[currentList].length) % LISTS[currentList].length;
-  loadBuildWord();
-};
-document.getElementById('buildNextBtn').onclick = () => {
-  currentIndex = (currentIndex + 1) % LISTS[currentList].length;
-  loadBuildWord();
-};
-
-/* ---------- Quiz mode: hear it, pick the matching word ---------- */
-
-let quizWord = '';
-let quizAnswered = false;
-
-function loadQuizWord(){
-  buildTabs();
-  const pool = LISTS[currentList];
-  quizWord = pool[Math.floor(Math.random() * pool.length)];
-  quizAnswered = false;
-  document.getElementById('quizFeedback').textContent = '';
-
-  const distractorPool = allWords.filter(w => w !== quizWord);
-  const distractors = shuffleArr(distractorPool).slice(0, 3);
-  const options = shuffleArr([quizWord, ...distractors]);
-
-  const grid = document.getElementById('quizGrid');
-  grid.innerHTML = '';
-  options.forEach(opt => {
-    const btn = document.createElement('button');
-    btn.className = 'quiz-option';
-    btn.textContent = opt;
-    btn.onclick = () => checkQuizAnswer(opt, btn, grid);
-    grid.appendChild(btn);
-  });
-
-  playSound('word:' + quizWord, quizWord);
-}
-
-async function checkQuizAnswer(chosen, btn, grid){
-  if(quizAnswered) return;
-  quizAnswered = true;
-  const feedback = document.getElementById('quizFeedback');
-  const allBtns = grid.querySelectorAll('.quiz-option');
-  allBtns.forEach(b => { b.disabled = true; if(b.textContent === quizWord) b.classList.add('correct'); });
-
-  quizScore.total++;
-  if(chosen === quizWord){
-    quizScore.correct++;
-    feedback.textContent = 'Great job! ⭐';
-    feedback.style.color = '#4fae7f';
-  }else{
-    btn.classList.add('wrong');
-    feedback.textContent = 'That one says "' + quizWord + '"';
-    feedback.style.color = '#c14a63';
-  }
-  document.getElementById('quizScore').textContent = 'Score: ' + quizScore.correct + ' / ' + quizScore.total;
-}
-
-document.getElementById('quizHearBtn').onclick = () => playSound('word:' + quizWord, quizWord);
-document.getElementById('quizNextBtn').onclick = () => loadQuizWord();
-
-/* ---------- Mode switcher ---------- */
-
-function setMode(mode){
-  currentMode = mode;
-  document.getElementById('practiceView').style.display = mode === 'practice' ? 'block' : 'none';
-  document.getElementById('buildView').style.display = mode === 'build' ? 'block' : 'none';
-  document.getElementById('quizView').style.display = mode === 'quiz' ? 'block' : 'none';
-  document.querySelectorAll('.mode-pill').forEach(p => p.classList.toggle('active', p.dataset.mode === mode));
-
-  if(mode === 'practice'){ subtitle.textContent = 'Tap a card to hear it spelled out'; render(); }
-  else if(mode === 'build'){ subtitle.textContent = 'Build the word from the letters'; loadBuildWord(); }
-  else if(mode === 'quiz'){ subtitle.textContent = 'Listen and pick the right word'; loadQuizWord(); }
-}
-
-document.querySelectorAll('.mode-pill').forEach(p => {
-  p.onclick = () => setMode(p.dataset.mode);
-});
-
-function showMicError(msg){
-  micError.textContent = msg;
-  micError.style.display = 'block';
-}
-
-let selectedDeviceId = null;
-
-async function ensureMic(deviceId){
-  if(mediaStream && !deviceId) return true;
-  if(location.protocol === 'file:'){
-    showMicError('This file is open directly from disk (a "file://" address), and browsers block microphone access there for security. Try uploading it to a site like Netlify Drop and opening the live link instead.');
-    return false;
-  }
-  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-    showMicError('This browser does not expose microphone access here. Try the latest Chrome or Safari.');
-    return false;
-  }
-  try{
-    if(mediaStream){
-      mediaStream.getTracks().forEach(t => t.stop());
-      mediaStream = null;
-    }
-    const constraints = {
-      audio: deviceId
-        ? { deviceId: { exact: deviceId }, echoCancellation: false, noiseSuppression: false, autoGainControl: false }
-        : { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
-    };
-    mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
-    micError.style.display = 'none';
-    return true;
-  }catch(e){
-    showMicError('Could not get microphone access (' + (e.name || 'error') + '). Check that the browser has permission to use the microphone for this page, then try again.');
-    return false;
-  }
-}
-
-let currentLevel = 0;
-let levelListeners = [];
-
-function teardownAudioGraph(){
-  if(sourceNode){ try{ sourceNode.disconnect(); }catch(e){} sourceNode = null; }
-  if(processorNode){ try{ processorNode.disconnect(); }catch(e){} processorNode = null; }
-  if(audioCtx){ try{ audioCtx.close(); }catch(e){} audioCtx = null; }
-}
-
-async function ensureAudioGraph(deviceId){
-  if(audioCtx && processorNode && !deviceId) return true;
-  teardownAudioGraph();
-  const micOk = await ensureMic(deviceId);
-  if(!micOk) return false;
-  try{
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if(audioCtx.state === 'suspended'){ await audioCtx.resume(); }
-    sourceNode = audioCtx.createMediaStreamSource(mediaStream);
-    processorNode = audioCtx.createScriptProcessor(4096, 1, 1);
-    const silentGain = audioCtx.createGain();
-    silentGain.gain.value = 0;
-    sourceNode.connect(processorNode);
-    processorNode.connect(silentGain);
-    silentGain.connect(audioCtx.destination);
-    processorNode.onaudioprocess = (e) => {
-      const data = e.inputBuffer.getChannelData(0);
-      let peak = 0;
-      for(let i=0;i<data.length;i++){
-        const v = Math.abs(data[i]);
-        if(v > peak) peak = v;
-      }
-      currentLevel = peak;
-      levelListeners.forEach(fn => fn(peak));
-      if(!isRecording) return;
-      currentBuffers.push(new Float32Array(data));
-    };
-    return true;
-  }catch(err){
-    showMicError('Could not set up audio recording (' + (err.name || 'error') + ').');
-    return false;
-  }
-}
-
-async function populateDeviceList(){
-  const select = document.getElementById('deviceSelect');
-  try{
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    const inputs = devices.filter(d => d.kind === 'audioinput');
-    select.innerHTML = '';
-    if(inputs.length === 0){
-      select.innerHTML = '<option>No microphones found</option>';
-      return;
-    }
-    inputs.forEach(d => {
-      const opt = document.createElement('option');
-      opt.value = d.deviceId;
-      opt.textContent = d.label || ('Microphone ' + (d.deviceId ? d.deviceId.slice(0,6) : ''));
-      select.appendChild(opt);
-    });
-    if(mediaStream){
-      const track = mediaStream.getAudioTracks()[0];
-      if(track){
-        const settings = track.getSettings ? track.getSettings() : {};
-        if(settings.deviceId) select.value = settings.deviceId;
-      }
-    }
-  }catch(e){
-    select.innerHTML = '<option>Could not list microphones</option>';
-  }
-}
-
-document.getElementById('deviceSelect').addEventListener('change', async (e) => {
-  selectedDeviceId = e.target.value;
-  const levelFill = document.getElementById('levelFill');
-  if(levelFill) levelFill.style.width = '0%';
-  await ensureAudioGraph(selectedDeviceId);
-});
-
-function mergeFloatBuffers(bufferArray, totalLength){
-  const result = new Float32Array(totalLength);
-  let offset = 0;
-  for(const buf of bufferArray){ result.set(buf, offset); offset += buf.length; }
-  return result;
-}
-
-function encodeWAV(samples, sampleRate){
-  const buffer = new ArrayBuffer(44 + samples.length * 2);
-  const view = new DataView(buffer);
-  const writeString = (offset, str) => { for(let i=0;i<str.length;i++) view.setUint8(offset+i, str.charCodeAt(i)); };
-  writeString(0, 'RIFF');
-  view.setUint32(4, 36 + samples.length*2, true);
-  writeString(8, 'WAVE');
-  writeString(12, 'fmt ');
-  view.setUint32(16, 16, true);
-  view.setUint16(20, 1, true);
-  view.setUint16(22, 1, true);
-  view.setUint32(24, sampleRate, true);
-  view.setUint32(28, sampleRate*2, true);
-  view.setUint16(32, 2, true);
-  view.setUint16(34, 16, true);
-  writeString(36, 'data');
-  view.setUint32(40, samples.length*2, true);
-  let offset = 44;
-  for(let i=0;i<samples.length;i++, offset+=2){
-    const s = Math.max(-1, Math.min(1, samples[i]));
-    view.setInt16(offset, s < 0 ? s*0x8000 : s*0x7FFF, true);
-  }
-  return new Blob([view], { type: 'audio/wav' });
-}
-
-function buildRecGrid(container, keys, prefix){
-  container.innerHTML = '';
-  keys.forEach(k => {
-    const fullKey = prefix + ':' + k;
-    const item = document.createElement('div');
-    item.className = 'rec-item';
-
-    const label = document.createElement('div');
-    label.className = 'label';
-    label.textContent = k;
-
-    const mark = document.createElement('div');
-    mark.className = 'has-mark';
-    mark.textContent = recordings[fullKey] ? 'saved' : '';
-
-    const btnRow = document.createElement('div');
-    btnRow.className = 'rec-buttons';
-
-    const recBtn = document.createElement('button');
-    recBtn.className = 'rec-btn';
-    recBtn.textContent = '\u23fa';
-    recBtn.title = 'Hold to record';
-
-    const playBtn = document.createElement('button');
-    playBtn.className = 'play-btn';
-    playBtn.textContent = '\u25b6';
-    playBtn.disabled = !recordings[fullKey];
-    playBtn.onclick = () => {
-      const url = recordings[fullKey];
-      if(!url) return;
-      const audio = new Audio(url);
-      audio.addEventListener('error', () => {
-        const code = audio.error ? audio.error.code : 'unknown';
-        showMicError('Playback error on "' + k + '" (code ' + code + ').');
-      });
-      audio.play().catch(err => showMicError('Could not play "' + k + '" back (' + (err.name || 'error') + ').'));
-    };
-
-    const downloadLink = document.createElement('a');
-    downloadLink.className = 'has-mark';
-    downloadLink.style.textDecoration = 'underline';
-    downloadLink.style.cursor = 'pointer';
-    downloadLink.textContent = '';
-    downloadLink.download = k + '.wav';
-
-    const startRec = async (e) => {
-      e.preventDefault();
-      const ok = await ensureAudioGraph();
-      if(!ok) return;
-      currentBuffers = [];
-      activeRecKey = fullKey;
-      isRecording = true;
-      recBtn.classList.add('recording');
-    };
-    const stopRec = (e) => {
-      e.preventDefault();
-      if(!isRecording) return;
-      isRecording = false;
-      recBtn.classList.remove('recording');
-      const keyAtStop = activeRecKey;
-      const buffersAtStop = currentBuffers;
-      setTimeout(() => {
-        const totalLength = buffersAtStop.reduce((sum, b) => sum + b.length, 0);
-        if(totalLength === 0){
-          showMicError('No audio was captured — try holding the button a little longer while you speak.');
-          return;
-        }
-        const merged = mergeFloatBuffers(buffersAtStop, totalLength);
-        const wavBlob = encodeWAV(merged, audioCtx.sampleRate);
-        if(recordings[keyAtStop]) URL.revokeObjectURL(recordings[keyAtStop]);
-        recordings[keyAtStop] = URL.createObjectURL(wavBlob);
-        playBtn.disabled = false;
-        const seconds = (totalLength / audioCtx.sampleRate).toFixed(2);
-        mark.textContent = 'saved (' + seconds + 's)';
-        downloadLink.href = recordings[keyAtStop];
-        downloadLink.textContent = 'download to test';
-      }, 100);
-    };
-
-    recBtn.addEventListener('pointerdown', startRec);
-    recBtn.addEventListener('pointerup', stopRec);
-    recBtn.addEventListener('pointerleave', stopRec);
-
-    btnRow.appendChild(recBtn);
-    btnRow.appendChild(playBtn);
-    item.appendChild(label);
-    item.appendChild(btnRow);
-    item.appendChild(mark);
-    item.appendChild(downloadLink);
-    container.appendChild(item);
-  });
-}
-
-function renderRecordView(){
-  buildRecGrid(letterRecGrid, uniqueLetters, 'letter');
-  buildRecGrid(wordRecGrid, allWords, 'word');
-  levelListeners = [];
-  ensureAudioGraph().then(async (ok) => {
-    if(!ok) return;
-    const levelFill = document.getElementById('levelFill');
-    levelListeners.push((peak) => {
-      const pct = Math.min(100, Math.round(peak * 300));
-      levelFill.style.width = pct + '%';
-    });
-    await populateDeviceList();
-  });
-}
-
-let inRecordMode = false;
-const modeSwitcherEl = document.getElementById('modeSwitcher');
-toggleModeBtn.onclick = () => {
-  inRecordMode = !inRecordMode;
-  if(inRecordMode){
-    document.getElementById('practiceView').style.display = 'none';
-    document.getElementById('buildView').style.display = 'none';
-    document.getElementById('quizView').style.display = 'none';
-    modeSwitcherEl.style.display = 'none';
-    tabsEl.style.display = 'none';
-    recordView.style.display = 'block';
-    toggleModeBtn.textContent = '\u2b05 Back to games';
-    subtitle.textContent = 'Record a clip for each letter and word';
-    renderRecordView();
-  }else{
-    modeSwitcherEl.style.display = 'flex';
-    tabsEl.style.display = 'flex';
-    recordView.style.display = 'none';
-    toggleModeBtn.textContent = '\ud83c\udf99\ufe0f Record my voice';
-    setMode(currentMode);
-  }
-};
-doneBtn.onclick = () => toggleModeBtn.click();
-
-/* =========================================================
-   SUBJECT SWITCHER
-   ========================================================= */
-const subjectPanels = {
-  reading: document.getElementById('subjectReading'),
-  phonics: document.getElementById('subjectPhonics'),
-  math: document.getElementById('subjectMath'),
-  science: document.getElementById('subjectScience'),
-  world: document.getElementById('subjectWorld')
-};
-let currentSubject = 'reading';
-function setSubject(subject){
-  currentSubject = subject;
-  Object.keys(subjectPanels).forEach(key => {
-    subjectPanels[key].style.display = key === subject ? 'block' : 'none';
-  });
-  document.querySelectorAll('.subject-pill').forEach(p => p.classList.toggle('active', p.dataset.subject === subject));
-  if(subject === 'phonics') initPhonics();
-  if(subject === 'math') initMath();
-  if(subject === 'science') initScience();
-  if(subject === 'world') initWorld();
-}
-document.querySelectorAll('.subject-pill').forEach(p => {
-  p.onclick = () => setSubject(p.dataset.subject);
-});
-
-/* =========================================================
-   PHONICS: ABC flashcards + Blend & Read
-   ========================================================= */
-const ALPHABET = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'];
-let abcCase = 'upper';
-let phonicsInited = false;
-
-function buildLetterGrid(){
-  const grid = document.getElementById('letterGrid');
-  grid.innerHTML = '';
-  ALPHABET.forEach(l => {
-    const display = abcCase === 'upper' ? l.toUpperCase() : l;
-    const btn = document.createElement('button');
-    btn.className = 'letter-card';
-    btn.textContent = display;
-    btn.onclick = () => speakSynth(l, 0.8);
-    grid.appendChild(btn);
-  });
-}
-
-document.getElementById('caseSwitcher').querySelectorAll('.mode-pill').forEach(p => {
-  p.onclick = () => {
-    abcCase = p.dataset.case;
-    document.getElementById('caseSwitcher').querySelectorAll('.mode-pill').forEach(x => x.classList.toggle('active', x === p));
-    buildLetterGrid();
-  };
-});
-
-const CVC_WORDS = ['cat','dog','sun','hat','pig','bed','cup','hop','run','mom','dad','box','fan','log','red','big','top','wet','yes','ten'];
-let blendIndex = 0;
-
-function renderBlendWord(){
-  const word = CVC_WORDS[blendIndex];
-  document.getElementById('blendWord').textContent = word;
-  const lettersEl2 = document.getElementById('blendLetters');
-  lettersEl2.innerHTML = '';
-  word.split('').forEach(ch => {
-    const tile = document.createElement('div');
-    tile.className = 'letter-tile';
-    tile.textContent = ch;
-    lettersEl2.appendChild(tile);
-  });
-  const dotsRow = document.getElementById('blendDots');
-  dotsRow.innerHTML = '';
-  CVC_WORDS.forEach((w, i) => {
-    const d = document.createElement('div');
-    d.className = 'dot' + (i === blendIndex ? ' current' : '');
-    d.onclick = () => { blendIndex = i; renderBlendWord(); };
-    dotsRow.appendChild(d);
-  });
-}
-
-async function playBlend(){
-  const word = CVC_WORDS[blendIndex];
-  const tiles = document.getElementById('blendLetters').querySelectorAll('.letter-tile');
-  window.speechSynthesis.cancel();
-  for(let i = 0; i < word.length; i++){
-    tiles.forEach(t => t.classList.remove('lit'));
-    tiles[i].classList.add('lit');
-    await speakSynth(word[i], 0.75);
-    await new Promise(r => setTimeout(r, 80));
-  }
-  tiles.forEach(t => t.classList.remove('lit'));
-  await speakSynth(word, 0.85);
-}
-
-document.getElementById('blendHearBtn').onclick = playBlend;
-document.getElementById('blendPrevBtn').onclick = () => { blendIndex = (blendIndex - 1 + CVC_WORDS.length) % CVC_WORDS.length; renderBlendWord(); };
-document.getElementById('blendNextBtn').onclick = () => { blendIndex = (blendIndex + 1) % CVC_WORDS.length; renderBlendWord(); };
-
-document.getElementById('phonicsSwitcher').querySelectorAll('.mode-pill').forEach(p => {
-  p.onclick = () => {
-    document.getElementById('phonicsSwitcher').querySelectorAll('.mode-pill').forEach(x => x.classList.toggle('active', x === p));
-    document.getElementById('abcView').style.display = p.dataset.pmode === 'abc' ? 'block' : 'none';
-    document.getElementById('blendView').style.display = p.dataset.pmode === 'blend' ? 'block' : 'none';
-  };
-});
-
-function initPhonics(){
-  if(phonicsInited) return;
-  phonicsInited = true;
-  buildLetterGrid();
-  renderBlendWord();
-}
-
-/* =========================================================
-   MATH: Counting, More/Less, Shapes, Patterns, Add/Subtract
-   ========================================================= */
-let mathInited = false;
-let countBy = 1;
-
-function buildNumberGrid(){
-  const grid = document.getElementById('numberGrid');
-  grid.innerHTML = '';
-  for(let n = 1; n <= 100; n++){
-    const cell = document.createElement('button');
-    cell.className = 'number-cell' + (n % 10 === 0 ? ' tens' : '');
-    cell.textContent = n;
-    cell.dataset.n = n;
-    cell.onclick = () => speakSynth(String(n), 0.9);
-    grid.appendChild(cell);
-  }
-}
-
-async function playCounting(){
-  const cells = document.querySelectorAll('#numberGrid .number-cell');
-  window.speechSynthesis.cancel();
-  const step = countBy;
-  for(let n = step; n <= 100; n += step){
-    cells.forEach(c => c.classList.remove('lit'));
-    const cell = document.querySelector('#numberGrid .number-cell[data-n="' + n + '"]');
-    if(cell) cell.classList.add('lit');
-    await speakSynth(String(n), 1.05);
-  }
-  cells.forEach(c => c.classList.remove('lit'));
-}
-
-document.getElementById('countBy1Btn').onclick = (e) => {
-  countBy = 1;
-  document.querySelectorAll('#countView .mode-pill').forEach(p => p.classList.remove('active'));
-  e.target.classList.add('active');
-  playCounting();
-};
-document.getElementById('countBy10Btn').onclick = (e) => {
-  countBy = 10;
-  document.querySelectorAll('#countView .mode-pill').forEach(p => p.classList.remove('active'));
-  e.target.classList.add('active');
-  playCounting();
-};
-
-function randInt(min, max){ return Math.floor(Math.random() * (max - min + 1)) + min; }
-
-function loadMoreLess(){
-  const a = randInt(1, 9);
-  let b = randInt(1, 9);
-  while(b === a) b = randInt(1, 9);
-  const askMore = Math.random() < 0.5;
-  document.getElementById('morelessPrompt').textContent = askMore ? 'Which group has more?' : 'Which group has fewer?';
-  const row = document.getElementById('morelessRow');
-  row.innerHTML = '';
-  [a, b].forEach(count => {
-    const group = document.createElement('div');
-    group.className = 'moreless-group';
-    group.textContent = '⭐'.repeat(count);
-    group.onclick = () => {
-      const isCorrect = askMore ? count === Math.max(a,b) : count === Math.min(a,b);
-      group.classList.add(isCorrect ? 'correct' : 'wrong');
-      speakSynth(isCorrect ? 'Yes! Great job!' : 'Try the other one', 1);
-      row.querySelectorAll('.moreless-group').forEach(g => g.onclick = null);
-    };
-    row.appendChild(group);
-  });
-}
-document.getElementById('morelessNextBtn').onclick = loadMoreLess;
-
-const SHAPES = [
-  {name:'circle', icon:'⚪'}, {name:'square', icon:'⬛'}, {name:'triangle', icon:'🔺'},
-  {name:'rectangle', icon:'▬'}, {name:'oval', icon:'🥚'}, {name:'star', icon:'⭐'},
-  {name:'diamond', icon:'🔶'}, {name:'hexagon', icon:'⬡'},
-  {name:'cube', icon:'🧊'}, {name:'sphere', icon:'🔴'}, {name:'cone', icon:'🍦'}, {name:'cylinder', icon:'🥫'}
-];
-let shapeIndex = 0;
-function renderShape(){
-  const s = SHAPES[shapeIndex];
-  document.getElementById('shapeIcon').textContent = s.icon;
-  document.getElementById('shapeName').textContent = s.name;
-  const dotsRow = document.getElementById('shapeDots');
-  dotsRow.innerHTML = '';
-  SHAPES.forEach((sh, i) => {
-    const d = document.createElement('div');
-    d.className = 'dot' + (i === shapeIndex ? ' current' : '');
-    d.onclick = () => { shapeIndex = i; renderShape(); };
-    dotsRow.appendChild(d);
-  });
-}
-document.getElementById('shapeCard').onclick = () => speakSynth(SHAPES[shapeIndex].name, 0.9);
-document.getElementById('shapePrevBtn').onclick = () => { shapeIndex = (shapeIndex - 1 + SHAPES.length) % SHAPES.length; renderShape(); };
-document.getElementById('shapeNextBtn').onclick = () => { shapeIndex = (shapeIndex + 1) % SHAPES.length; renderShape(); };
-
-const PATTERN_ITEMS = ['🔴','🔵','🟡','🟢'];
-let currentPattern = [];
-let patternAnswer = '';
-function loadPattern(){
-  const isABC = Math.random() < 0.5;
-  const chosen = shuffleArr(PATTERN_ITEMS).slice(0, isABC ? 3 : 2);
-  const seq = [];
-  for(let i = 0; i < 6; i++) seq.push(chosen[i % chosen.length]);
-  patternAnswer = chosen[6 % chosen.length];
-  currentPattern = seq;
-  document.getElementById('patternRow').textContent = seq.join(' ') + ' ?';
-  document.getElementById('patternFeedback').textContent = 'What comes next?';
-  const distractors = shuffleArr(PATTERN_ITEMS.filter(x => x !== patternAnswer)).slice(0, 2);
-  const options = shuffleArr([patternAnswer, ...distractors]);
-  const optRow = document.getElementById('patternOptions');
-  optRow.innerHTML = '';
-  options.forEach(opt => {
-    const btn = document.createElement('button');
-    btn.className = 'quiz-option';
-    btn.textContent = opt;
-    btn.style.fontSize = '30px';
-    btn.onclick = () => {
-      const feedback = document.getElementById('patternFeedback');
-      if(opt === patternAnswer){
-        feedback.textContent = 'Yes! 🌟';
-        feedback.style.color = '#4fae7f';
-        speakSynth('Yes! Great job!', 1);
-      }else{
-        feedback.textContent = 'Not quite, try the next one!';
-        feedback.style.color = '#c14a63';
-      }
-      optRow.querySelectorAll('.quiz-option').forEach(b => b.disabled = true);
-    };
-    optRow.appendChild(btn);
-  });
-}
-document.getElementById('patternNextBtn').onclick = loadPattern;
-
-let addsubA = 0, addsubB = 0, addsubIsAdd = true, addsubAnswer = 0;
-function loadAddSub(){
-  addsubIsAdd = Math.random() < 0.6;
-  if(addsubIsAdd){
-    addsubA = randInt(0, 5);
-    addsubB = randInt(0, 5 - Math.max(0, addsubA - 5));
-    if(addsubA + addsubB > 10) addsubB = 10 - addsubA;
-    addsubAnswer = addsubA + addsubB;
-  }else{
-    addsubA = randInt(2, 10);
-    addsubB = randInt(0, addsubA);
-    addsubAnswer = addsubA - addsubB;
-  }
-  document.getElementById('addsubProblem').textContent = addsubA + (addsubIsAdd ? ' + ' : ' - ') + addsubB + ' = ?';
-  document.getElementById('addsubDots').innerHTML =
-    '<div class="moreless-group" style="cursor:default;">' + '⭐'.repeat(addsubA) + '</div>' +
-    (addsubIsAdd
-      ? '<div class="moreless-group" style="cursor:default;">' + '⭐'.repeat(addsubB) + '</div>'
-      : '');
-  document.getElementById('addsubFeedback').textContent = '';
-
-  const distractorSet = new Set();
-  while(distractorSet.size < 3){
-    const d = randInt(0, 10);
-    if(d !== addsubAnswer) distractorSet.add(d);
-  }
-  const options = shuffleArr([addsubAnswer, ...distractorSet]);
-  const optRow = document.getElementById('addsubOptions');
-  optRow.innerHTML = '';
-  options.forEach(opt => {
-    const btn = document.createElement('button');
-    btn.className = 'quiz-option';
-    btn.textContent = opt;
-    btn.onclick = () => {
-      const feedback = document.getElementById('addsubFeedback');
-      if(opt === addsubAnswer){
-        feedback.textContent = 'Yes! 🌟';
-        feedback.style.color = '#4fae7f';
-        speakSynth('Yes! Great job!', 1);
-      }else{
-        feedback.textContent = 'Try again — count the stars!';
-        feedback.style.color = '#c14a63';
-      }
-      optRow.querySelectorAll('.quiz-option').forEach(b => b.disabled = true);
-    };
-    optRow.appendChild(btn);
-  });
-}
-document.getElementById('addsubNextBtn').onclick = loadAddSub;
-
-document.getElementById('mathSwitcher').querySelectorAll('.mode-pill').forEach(p => {
-  p.onclick = () => {
-    document.getElementById('mathSwitcher').querySelectorAll('.mode-pill').forEach(x => x.classList.toggle('active', x === p));
-    const mode = p.dataset.mmode;
-    document.getElementById('countView').style.display = mode === 'count' ? 'block' : 'none';
-    document.getElementById('morelessView').style.display = mode === 'moreless' ? 'block' : 'none';
-    document.getElementById('shapesView').style.display = mode === 'shapes' ? 'block' : 'none';
-    document.getElementById('patternsView').style.display = mode === 'patterns' ? 'block' : 'none';
-    document.getElementById('addsubView').style.display = mode === 'addsub' ? 'block' : 'none';
-    if(mode === 'moreless') loadMoreLess();
-    if(mode === 'shapes') renderShape();
-    if(mode === 'patterns') loadPattern();
-    if(mode === 'addsub') loadAddSub();
-  };
-});
-
-function initMath(){
-  if(mathInited) return;
-  mathInited = true;
-  buildNumberGrid();
-  loadMoreLess();
-  renderShape();
-  loadPattern();
-  loadAddSub();
-}
-
-/* =========================================================
-   SCIENCE: Five Senses, Weather & Seasons
-   ========================================================= */
-const SENSES = [
-  {name:'sight', icon:'👀', blurb:'You see with your eyes'},
-  {name:'hearing', icon:'👂', blurb:'You hear with your ears'},
-  {name:'smell', icon:'👃', blurb:'You smell with your nose'},
-  {name:'taste', icon:'👅', blurb:'You taste with your tongue'},
-  {name:'touch', icon:'✋', blurb:'You touch with your hands and skin'}
-];
-const WEATHER = [
-  {name:'sunny', icon:'☀️', blurb:'A bright day with sunshine'},
-  {name:'rainy', icon:'🌧️', blurb:'Water falls from the clouds'},
-  {name:'snowy', icon:'❄️', blurb:'Cold and snowy outside'},
-  {name:'windy', icon:'🌬️', blurb:'The air is blowing around'},
-  {name:'spring', icon:'🌷', blurb:'Flowers bloom and it gets warmer'},
-  {name:'summer', icon:'🌞', blurb:'The hottest season'},
-  {name:'fall', icon:'🍂', blurb:'Leaves change color and fall'},
-  {name:'winter', icon:'⛄', blurb:'The coldest season'}
-];
-let scienceList = SENSES;
-let scienceIndex = 0;
-
-function renderScience(){
-  const item = scienceList[scienceIndex];
-  document.getElementById('scienceIcon').textContent = item.icon;
-  document.getElementById('scienceName').textContent = item.name;
-  const dotsRow = document.getElementById('scienceDots');
-  dotsRow.innerHTML = '';
-  scienceList.forEach((s, i) => {
-    const d = document.createElement('div');
-    d.className = 'dot' + (i === scienceIndex ? ' current' : '');
-    d.onclick = () => { scienceIndex = i; renderScience(); };
-    dotsRow.appendChild(d);
-  });
-}
-document.getElementById('scienceCard').onclick = () => {
-  const item = scienceList[scienceIndex];
-  speakSynth(item.name + '. ' + item.blurb, 0.95);
-};
-document.getElementById('sciencePrevBtn').onclick = () => { scienceIndex = (scienceIndex - 1 + scienceList.length) % scienceList.length; renderScience(); };
-document.getElementById('scienceNextBtn').onclick = () => { scienceIndex = (scienceIndex + 1) % scienceList.length; renderScience(); };
-
-document.getElementById('scienceSwitcher').querySelectorAll('.mode-pill').forEach(p => {
-  p.onclick = () => {
-    document.getElementById('scienceSwitcher').querySelectorAll('.mode-pill').forEach(x => x.classList.toggle('active', x === p));
-    scienceList = p.dataset.smode === 'senses' ? SENSES : WEATHER;
-    scienceIndex = 0;
-    renderScience();
-  };
-});
-
-function initScience(){
-  scienceList = SENSES;
-  scienceIndex = 0;
-  renderScience();
-}
-
-/* =========================================================
-   WORLD: Community Helpers
-   ========================================================= */
-const HELPERS = [
-  {name:'doctor', icon:'🩺', blurb:'Helps you stay healthy and takes care of you when you are sick'},
-  {name:'teacher', icon:'🍎', blurb:'Helps you learn new things at school'},
-  {name:'police officer', icon:'👮', blurb:'Keeps our community safe'},
-  {name:'firefighter', icon:'🚒', blurb:'Puts out fires and helps in emergencies'},
-  {name:'mail carrier', icon:'📬', blurb:'Delivers letters and packages'},
-  {name:'farmer', icon:'🚜', blurb:'Grows food for everyone to eat'},
-  {name:'dentist', icon:'🦷', blurb:'Helps keep your teeth healthy'},
-  {name:'librarian', icon:'📚', blurb:'Helps you find books at the library'}
-];
-let worldIndex = 0;
-function renderWorld(){
-  const item = HELPERS[worldIndex];
-  document.getElementById('worldIcon').textContent = item.icon;
-  document.getElementById('worldName').textContent = item.name;
-  const dotsRow = document.getElementById('worldDots');
-  dotsRow.innerHTML = '';
-  HELPERS.forEach((h, i) => {
-    const d = document.createElement('div');
-    d.className = 'dot' + (i === worldIndex ? ' current' : '');
-    d.onclick = () => { worldIndex = i; renderWorld(); };
-    dotsRow.appendChild(d);
-  });
-}
-document.getElementById('worldCard').onclick = () => {
-  const item = HELPERS[worldIndex];
-  speakSynth(item.name + '. ' + item.blurb, 0.95);
-};
-document.getElementById('worldPrevBtn').onclick = () => { worldIndex = (worldIndex - 1 + HELPERS.length) % HELPERS.length; renderWorld(); };
-document.getElementById('worldNextBtn').onclick = () => { worldIndex = (worldIndex + 1) % HELPERS.length; renderWorld(); };
-
-function initWorld(){
-  worldIndex = 0;
-  renderWorld();
-}
-
-setSubject('reading');
-setMode('practice');
 </script>
-</body>
-</html>
+
+</body></html>
