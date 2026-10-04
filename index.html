@@ -143,6 +143,29 @@ a.sold:hover { text-decoration: underline; }
 .lk-links a.off { border-color: var(--line); color: var(--muted); pointer-events: none; }
 .lk-hint { color: var(--muted); font-size: 13px; }
 .signote { display: block; margin-top: 4px; max-width: 220px; white-space: normal; font-size: 11px; color: var(--muted); line-height: 1.35; }
+.pill.good { color: var(--up); border-color: var(--up); font-weight: 700; }
+.pill.wait { color: var(--warn); border-color: var(--warn); }
+.pill.thin { color: var(--down); border-color: var(--down); border-style: dashed; }
+.guide { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.guide h2 { margin: 0; font-size: 16px; font-weight: 700; }
+.guide-head p { margin: 4px 0 0; color: var(--muted); max-width: 80ch; }
+.guide-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; align-items: start; }
+.gcol { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.gcol.good { --c: var(--up); }
+.gcol.wait { --c: var(--warn); }
+.gcol.thin { --c: var(--down); }
+.gcol h3 { margin: 0; font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.gdot { width: 9px; height: 9px; border-radius: 50%; background: var(--c); flex: none; }
+.gsub { margin: -6px 0 0; color: var(--muted); font-size: 12px; }
+.gcol ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.gi { display: flex; flex-direction: column; gap: 3px; border-top: 1px solid var(--line); padding-top: 12px; min-width: 0; }
+.gi:first-child { border-top: 0; padding-top: 0; }
+.gi-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 10px; align-items: baseline; }
+.gi-tag { font-family: var(--font-num); font-size: 12px; color: var(--c); }
+.gi-card { color: var(--muted); font-size: 12px; }
+.gi-why, .gi-watch { margin: 2px 0 0; font-size: 13px; }
+.gi-watch { color: var(--muted); }
+.guide-how { margin: 0; color: var(--muted); font-size: 13px; max-width: 100ch; }
 @media (prefers-reduced-motion: no-preference) { .chip, .tab, tbody tr td { transition: background-color .12s, color .12s, border-color .12s; } }
 </style>
 
@@ -150,7 +173,7 @@ a.sold:hover { text-decoration: underline; }
   <aside class="side" aria-label="Filters">
     <h2 class="side-h">Filter by</h2>
     <section><h3>Sport</h3><div class="chips" id="f-sport"></div></section>
-    <section><h3>Player</h3><select class="sel" id="f-player" aria-label="Player"></select></section>
+    <section><h3>Player or Pokémon</h3><select class="sel" id="f-player" aria-label="Player"></select></section>
     <section><h3>Price</h3><div class="chips" id="f-price"></div></section>
     <section><h3>Grade</h3><div class="chips" id="f-grade"></div></section>
     <section><h3>Type</h3><label class="sw" for="f-auto"><input type="checkbox" id="f-auto"> Autographs only</label></section>
@@ -160,15 +183,24 @@ a.sold:hover { text-decoration: underline; }
     <header class="top">
       <div>
         <h1>Card Radar</h1>
-        <p class="sub">Cards to watch in baseball, football, basketball, hockey, soccer and WNBA, with recent prices and price changes. Use the look-up below for any player in any sport.</p>
+        <p class="sub">Cards to watch in baseball, football, basketball, hockey, soccer, WNBA and Pokémon, with recent prices and price changes. Use the look-up for any player or card.</p>
       </div>
       <input class="search" id="q" type="search" placeholder="Search players or sets" aria-label="Search cards">
     </header>
 
+    <section class="guide" aria-label="Buy guide">
+      <div class="guide-head">
+        <h2>Buy guide</h2>
+        <p>Where the price looks good right now. Only cards with sales in the last few days are scored, which today means the Pokémon cards below, priced from Oct 1 to 3, 2026. Every other row uses older prices, so open its Sold link before you buy.</p>
+      </div>
+      <div class="guide-cols" id="guide-cols"></div>
+      <p class="guide-how">How I scored it: Good buy zone means most of the last sales sit in a steady range and the PSA 10 price is at least about 4 times the raw price, so a clean copy has room to grade up. Buy at or under the middle of the recent sold prices. Wait means the price is swinging or falling, or a PSA 9 sells for less than raw, so only a 10 pays. Careful means very few sales set the price. This is my reading of the data, not financial advice, and prices move daily.</p>
+    </section>
+
     <section class="lookup" aria-label="Look up any player">
       <div>
         <h2>Look up any player</h2>
-        <p>Type any name from any sport. The links open live sold listings and sales history, so those prices are current.</p>
+        <p>Type any player or Pokémon card. The links open live sold listings and sales history, so those prices are current.</p>
       </div>
       <div class="lk-row">
         <select class="sel" id="lk-sport" aria-label="Sport">
@@ -179,12 +211,13 @@ a.sold:hover { text-decoration: underline; }
           <option value="nhl">Hockey</option>
           <option value="soccer">Soccer</option>
           <option value="wnba">WNBA</option>
+          <option value="pokemon">Pokémon</option>
           <option value="f1">Formula 1</option>
           <option value="ufc">UFC</option>
           <option value="golf">Golf</option>
           <option value="tennis">Tennis</option>
         </select>
-        <input class="lk-input" id="lk-q" type="search" placeholder="Player name, for example Jayden Daniels" aria-label="Player name" autocomplete="off">
+        <input class="lk-input" id="lk-q" type="search" placeholder="Player or card, for example Jayden Daniels or Umbreon ex" aria-label="Player name" autocomplete="off">
         <select class="sel" id="lk-type" aria-label="Card type">
           <option value="">Any card</option>
           <option value="rookie">Rookie card</option>
@@ -207,7 +240,7 @@ a.sold:hover { text-decoration: underline; }
             <th class="sortable" data-k="price">Price</th>
             <th class="sortable" data-k="chg">Change</th>
             <th>Grade</th>
-            <th>Print run</th>
+            <th>Print run or rarity</th>
             <th class="left">Signal</th>
             <th>Sales</th>
           </tr>
@@ -216,7 +249,7 @@ a.sold:hover { text-decoration: underline; }
       </table>
     </div>
     <p class="count" id="count"></p>
-    <p class="note">Prices come from sold listings, asking prices, price guides and press coverage from late 2025 to September 2026, so they are not live. Rows labeled est. use a range an outlet reported, and I took the midpoint. An ask is what a seller wants, not what a card sold for. Change is measured against the earlier price named under each percentage, and a dash means I found no earlier price to compare. Signal tags are my reading of the data and not advice. The radar only covers players I researched, so use the look-up for anyone else, and use each row's Sold link to see what that card sells for today.</p>
+    <p class="note">Pokémon prices are PriceCharting price guide figures and sold listings from Oct 1 to 3, 2026, unless a row names another date. Other prices come from sold listings, asking prices, price guides and press coverage from late 2025 to September 2026, so they are not live. Rows labeled est. use a range an outlet reported, and I took the midpoint. An ask is what a seller wants, not what a card sold for. Change is measured against the earlier price named under each percentage, and a dash means I found no earlier price to compare. Signal tags are my reading of the data and not advice. The radar only covers players I researched, so use the look-up for anyone else, and use each row's Sold link to see what that card sells for today.</p>
   </main>
 </div>
 
@@ -225,7 +258,7 @@ a.sold:hover { text-decoration: underline; }
   function r(p, s, set, card, g, run, auto, price, kind, chg, cn, sig, asof, q, n) {
     return { p: p, s: s, set: set, card: card, g: g, run: run, auto: auto, price: price, kind: kind, chg: chg, cn: cn, sig: sig, asof: asof, q: q, n: n || '' };
   }
-  var B = 'Baseball', S_ = 'Soccer', FB = 'Football', BK = 'Basketball', HK = 'Hockey', WN = 'WNBA';
+  var B = 'Baseball', S_ = 'Soccer', FB = 'Football', BK = 'Basketball', HK = 'Hockey', WN = 'WNBA', PK = 'Pokémon';
   var ROWS = [
     // Cam Schlittler
     r('Cam Schlittler', B, '2025 Bowman Chrome', '1st Auto Refractor', 'Raw', '/499', true, 775, 'last sale', 34.8, '30 days', 'Momentum', 'Jun 27, 2026', 'cam schlittler 2025 bowman chrome 1st auto refractor 499'),
@@ -278,7 +311,7 @@ a.sold:hover { text-decoration: underline; }
     r('Cavan Sullivan', S_, '2025 Topps Chrome MLS', 'Rookie Auto #CA-CS', 'Raw', 'Base auto', true, 146.4, 'avg of 11 asks', null, '', 'Speculative', 'Listings', 'cavan sullivan 2025 topps chrome mls auto ca-cs'),
     r('Cavan Sullivan', S_, '2025 Topps Chrome MLS', 'Purple Refractor Auto', 'Raw', '/75', true, 246.3, 'avg of 9 asks', null, '', 'Speculative', 'Listings', 'cavan sullivan 2025 topps chrome mls purple refractor auto 75'),
     r('Cavan Sullivan', S_, '2025 Topps Chrome Sapphire MLS', 'Rookie Auto', 'Raw', 'Sapphire', true, 238, 'last sale', null, '', 'Speculative', 'Apr 18, 2026', 'cavan sullivan 2025 topps chrome sapphire mls auto'),
-    r('Cavan Sullivan', S_, '2025 Topps Chrome MLS', 'Rookie Debut Patch Auto', 'n/a', '1/1', true, 324000, 'last sale', 259, 'Jul 2026 record ($90,158)', 'Reference', 'Sep 4, 2026', 'cavan sullivan 2025 topps chrome mls debut patch auto'),
+    r('Cavan Sullivan', S_, '2025 Topps Chrome MLS', 'Rookie Debut Patch Auto', 'n/a', '1/1', true, 324000, 'last sale', null, '', 'Reference', 'Sep 4, 2026', 'cavan sullivan 2025 topps chrome mls debut patch auto', 'His earlier record, $90,158 in July, was a different card'),
     // Gilberto Mora
     r('Gilberto Mora', S_, '2026 Prizm World Cup', 'Silver Wave Rookie #290', 'Raw', 'Parallel', false, 140, 'ask', null, '', 'Speculative', 'Listing', 'gilberto mora 2026 prizm world cup silver wave 290'),
     r('Gilberto Mora', S_, '2026 Prizm World Cup', 'New Era Rookie', 'Raw', 'Base', false, 14.99, 'ask', null, '', 'Speculative', 'Listing', 'gilberto mora 2026 prizm world cup new era rookie'),
@@ -333,13 +366,38 @@ a.sold:hover { text-decoration: underline; }
     r('Aidan Miller', B, '2024 Bowman Chrome', 'Prospect Auto', 'Raw', 'Base auto', true, 90, 'raw price', null, '', 'Value', '2026 article', 'aidan miller 2024 bowman chrome prospect auto'),
     r('Konnor Griffin', B, '2025 Bowman Chrome', 'Prospect Auto True Blue Refractor #CPA-KG', 'Raw', '/150', true, 249.99, 'current bid', null, '', 'Speculative', 'Listing', 'konnor griffin 2025 bowman chrome prospect auto blue refractor 150'),
     r('Munetaka Murakami', B, '2026 Bowman Chrome', 'Rookie Autograph', 'Raw', 'Base auto', true, 438.5, 'est. midpoint of $257-$620', null, '', 'Speculative', 'Early 2026 auctions', 'munetaka murakami 2026 bowman chrome rookie auto'),
-    r('Seong-Jun Kim', B, '2026 Bowman Chrome', 'Red Refractor', 'n/a', '/5', false, 2000, 'release-day sale', null, '', 'Reference', 'May 13, 2026', 'seong-jun kim 2026 bowman chrome red refractor 5')
+    r('Seong-Jun Kim', B, '2026 Bowman Chrome', 'Red Refractor', 'n/a', '/5', false, 2000, 'release-day sale', null, '', 'Reference', 'May 13, 2026', 'seong-jun kim 2026 bowman chrome red refractor 5'),
+    // Pokemon (PriceCharting price guide and sold listings, Oct 1 to 3, 2026, unless a row says otherwise)
+    r('Charizard ex', PK, 'Scarlet & Violet 151', 'Special Illustration Rare #199', 'Raw', 'SIR', false, 338.85, 'price guide', 0.8, 'vs prior price guide', 'Good buy', 'Oct 1, 2026', 'charizard ex 199/165 151', 'Last 5 sales ran $315 to $360'),
+    r('Charizard ex', PK, 'Scarlet & Violet 151', 'Special Illustration Rare #199', 'PSA 10', 'SIR', false, 1392, 'price guide', -0.6, 'vs prior price guide', 'Reference', 'Oct 1, 2026', 'charizard ex 199/165 151 psa 10'),
+    r('Charizard ex', PK, 'Obsidian Flames', 'Special Illustration Rare #223', 'Raw', 'SIR', false, 95, 'price guide', -1, 'vs prior price guide', 'Good buy', 'Oct 2, 2026', 'charizard ex 223/197 obsidian flames', 'Last 10 sales ran $75 to $106'),
+    r('Charizard ex', PK, 'Obsidian Flames', 'Special Illustration Rare #223', 'PSA 10', 'SIR', false, 725.95, 'price guide', 2.2, 'vs prior price guide', 'Reference', 'Oct 2, 2026', 'charizard ex 223/197 obsidian flames psa 10'),
+    r('Umbreon ex', PK, 'Prismatic Evolutions', 'Special Illustration Rare #161', 'Raw', 'SIR', false, 1179.5, 'price guide', -1.7, 'vs prior price guide', 'Good buy', 'Oct 3, 2026', 'umbreon ex 161/131 prismatic evolutions', 'Last 7 sales ran $950 to $1,286'),
+    r('Umbreon ex', PK, 'Prismatic Evolutions', 'Special Illustration Rare #161', 'PSA 10', 'SIR', false, 5287.5, 'price guide', -6, 'vs prior price guide', 'Reference', 'Oct 3, 2026', 'umbreon ex 161/131 prismatic evolutions psa 10'),
+    r('Mega Gengar ex', PK, 'Ascended Heroes', 'Special Illustration Rare #284', 'Raw', 'SIR', false, 818.75, 'price guide', null, '', 'Wait', 'Oct 1, 2026', 'mega gengar ex 284/217 ascended heroes', 'Last 5 sales ran $700 to $1,000'),
+    r('Mega Gengar ex', PK, 'Ascended Heroes', 'Special Illustration Rare #284', 'PSA 10', 'SIR', false, 1675, 'last sale', -65, 'Feb 20 sale ($4,785)', 'Wait', 'Sep 29, 2026', 'mega gengar ex 284/217 ascended heroes psa 10', 'Price guide shows $1,930'),
+    r('Mega Dragonite ex', PK, 'Ascended Heroes', 'Special Illustration Rare #290', 'Raw', 'SIR', false, 499.98, 'price guide', -9.1, 'vs prior price guide', 'Wait', 'Oct 1, 2026', 'mega dragonite ex 290/217 ascended heroes', 'PSA 9 sold below raw, at $435 and $482'),
+    r('Mega Dragonite ex', PK, 'Ascended Heroes', 'Special Illustration Rare #290', 'PSA 10', 'SIR', false, 973.14, 'price guide', -2.6, 'vs prior price guide', 'Reference', 'Oct 1, 2026', 'mega dragonite ex 290/217 ascended heroes psa 10'),
+    r('Pikachu ex', PK, 'Surging Sparks', 'Special Illustration Rare #238', 'Raw', 'SIR', false, 254.45, 'price guide', 2.8, 'vs prior price guide', 'Wait', 'Oct 2, 2026', 'pikachu ex 238/191 surging sparks', 'Last 5 sales ran $157 to $285'),
+    r('Pikachu ex', PK, 'Surging Sparks', 'Special Illustration Rare #238', 'PSA 10', 'SIR', false, 837.5, 'price guide', -8.1, 'vs prior price guide', 'Reference', 'Oct 2, 2026', 'pikachu ex 238/191 surging sparks psa 10'),
+    r('Sylveon ex', PK, 'Prismatic Evolutions', 'Special Illustration Rare #156', 'Raw', 'SIR', false, 445.48, 'price guide', null, '', 'Wait', 'Oct 2, 2026', 'sylveon ex 156/131 prismatic evolutions', 'Sales went from $350 to $480 in four days'),
+    r('Sylveon ex', PK, 'Prismatic Evolutions', 'Special Illustration Rare #156', 'PSA 10', 'SIR', false, 1358, 'price guide', null, '', 'Reference', 'Oct 2, 2026', 'sylveon ex 156/131 prismatic evolutions psa 10'),
+    r('Surging Sparks', PK, 'Surging Sparks', 'Booster box (sealed)', 'Sealed', 'Sealed', false, 300, 'price guide', 25, 'vs about $240 in May (midpoint of $220-$260)', 'Wait', 'Oct 3, 2026', 'surging sparks booster box sealed', 'Near the $250 to $300 year-end target'),
+    r('Prismatic Evolutions', PK, 'Prismatic Evolutions', 'Elite Trainer Box (sealed)', 'Sealed', 'Sealed', false, 141.91, 'price guide', -16.5, 'vs about $170 in May (midpoint of $160-$180)', 'Reference', 'Oct 2, 2026', 'prismatic evolutions elite trainer box sealed', 'Last 7 sales ran $128 to $192'),
+    r('Umbreon VMAX', PK, 'Evolving Skies', 'Alternate Art #215', 'Raw', 'Alt Art', false, 1790.73, 'price guide', null, '', 'Reference', 'Oct 1, 2026', 'umbreon vmax 215/203 evolving skies', 'Last 7 sales ran $1,325 to $2,500'),
+    r('Umbreon VMAX', PK, 'Evolving Skies', 'Alternate Art #215', 'PSA 10', 'Alt Art', false, 3875, 'price guide', null, '', 'Reference', 'Oct 1, 2026', 'umbreon vmax 215/203 evolving skies psa 10'),
+    r('Charizard', PK, 'Base Set (unlimited)', '#4', 'Raw', 'Holo', false, 365.62, 'price guide', 9.6, 'vs prior price guide', 'Reference', 'Oct 1, 2026', 'charizard 4/102 base set unlimited', 'Last 8 sales ran $199 to $600, mixed conditions'),
+    r('Charizard', PK, 'Base Set (unlimited)', '#4', 'PSA 10', 'Holo', false, 19525, 'price guide', 59.1, 'one move from $12,275', 'Thin data', 'Oct 1, 2026', 'charizard 4/102 base set unlimited psa 10', 'A $7,250 jump usually means one sale'),
+    r('Japanese Charizard', PK, '1996 Japanese Base Set', 'No Rarity Symbol', 'PSA 10', 'Holo', false, 1700000, 'last sale', null, '', 'Reference', 'Mar 3, 2026', 'japanese base set charizard no rarity symbol psa 10', 'Record sale'),
+    r('Pikachu Illustrator', PK, '1998 Prize Card', 'Illustrator', 'PSA 9', 'Promo', false, 1406250, 'last sale', null, '', 'Reference', 'Mar 2026', 'pikachu illustrator psa 9'),
+    r('Sceptile', PK, 'POP Series 1 (2004)', '#4/17', 'PSA 10', 'Holo', false, 11542, 'reported price', 3106, 'reported 30-day change', 'Thin data', 'Oct 3, 2026', 'sceptile 4/17 pop series 1 psa 10', 'Raw is $32.71'),
+    r('Mudkip', PK, 'Crystal Guardians (2006)', '#57/100', 'PSA 10', 'Holo', false, 21000, 'reported price', 276.6, 'reported 30-day change', 'Thin data', 'Oct 3, 2026', 'mudkip 57/100 crystal guardians psa 10', 'Raw is $82.16')
   ];
 
-  var SIG = { 'Momentum': 'up', 'Cooling': 'down', 'Value': 'val', 'Speculative': 'warn', 'Reference': 'ref', 'Find it': 'find' };
-  var TABS = [['all', 'All'], ['rising', 'Rising'], ['cooling', 'Cooling'], ['value', 'Value'], ['watch', 'Watchlist']];
+  var SIG = { 'Good buy': 'good', 'Wait': 'wait', 'Thin data': 'thin', 'Momentum': 'up', 'Cooling': 'down', 'Value': 'val', 'Speculative': 'warn', 'Reference': 'ref', 'Find it': 'find' };
+  var TABS = [['all', 'All'], ['good', 'Good buys'], ['rising', 'Rising'], ['cooling', 'Cooling'], ['value', 'Value'], ['watch', 'Watchlist']];
   var PRICES = [['any', 'Any'], ['u100', 'Under $100'], ['mid', '$100 to $1,000'], ['o1k', 'Over $1,000']];
-  var GRADES = ['Any', 'Raw', 'PSA 9', 'PSA 10', 'SGC 10'];
+  var GRADES = ['Any', 'Raw', 'PSA 9', 'PSA 10', 'SGC 10', 'Sealed'];
 
   var state = { sport: 'All', player: 'All', price: 'any', grade: 'Any', auto: false, tab: 'all', q: '', sort: 'chg', dir: -1 };
 
@@ -375,7 +433,7 @@ a.sold:hover { text-decoration: underline; }
     return x.price > 1000;
   }
 
-  var SPORTS = ['All', 'Baseball', 'Basketball', 'Football', 'Hockey', 'Soccer', 'WNBA'];
+  var SPORTS = ['All', 'Baseball', 'Basketball', 'Football', 'Hockey', 'Soccer', 'WNBA', PK];
   var players = ['All'];
   ROWS.map(function (x) { return x.p; }).filter(function (p, i, a) { return a.indexOf(p) === i; })
     .sort(function (a, b) { return a.localeCompare(b); })
@@ -432,8 +490,9 @@ a.sold:hover { text-decoration: underline; }
       if (state.auto && !x.auto) return false;
       if (!priceOk(x)) return false;
       if (state.q && (x.p + ' ' + x.set + ' ' + x.card).toLowerCase().indexOf(state.q) < 0) return false;
-      if (state.tab === 'rising' && !(x.chg != null && x.chg > 0)) return false;
-      if (state.tab === 'cooling' && !(x.chg != null && x.chg < 0)) return false;
+      if (state.tab === 'good' && x.sig !== 'Good buy') return false;
+      if (state.tab === 'rising' && !(x.chg != null && x.chg > 0 && x.sig !== 'Thin data')) return false;
+      if (state.tab === 'cooling' && !(x.chg != null && x.chg < 0 && x.sig !== 'Thin data')) return false;
       if (state.tab === 'value' && x.sig !== 'Value') return false;
       if (state.tab === 'watch' && !watch.has(key(x))) return false;
       return true;
@@ -441,7 +500,8 @@ a.sold:hover { text-decoration: underline; }
     var k = state.sort, d = state.dir;
     rows.sort(function (a, b) {
       if (k === 'p') return d * a.p.localeCompare(b.p) || (b.price || 0) - (a.price || 0);
-      var av = a[k], bv = b[k];
+      var av = (k === 'chg' && (a.sig === 'Thin data' || a.price == null)) ? null : a[k];
+      var bv = (k === 'chg' && (b.sig === 'Thin data' || b.price == null)) ? null : b[k];
       if (av == null && bv == null) return (b.price || 0) - (a.price || 0);
       if (av == null) return 1;
       if (bv == null) return -1;
@@ -452,7 +512,7 @@ a.sold:hover { text-decoration: underline; }
 
   function changeHtml(x) {
     if (x.chg == null) return '<span class="flat num">–</span>';
-    var cls = x.chg > 0 ? 'up' : (x.chg < 0 ? 'down' : 'flat');
+    var cls = x.sig === 'Thin data' ? 'flat' : (x.chg > 0 ? 'up' : (x.chg < 0 ? 'down' : 'flat'));
     var txt = (x.chg > 0 ? '+' : '') + x.chg.toFixed(1) + '%';
     return '<span class="' + cls + ' num">' + txt + '</span><span class="small">' + esc(x.cn) + '</span>';
   }
@@ -502,6 +562,58 @@ a.sold:hover { text-decoration: underline; }
     document.getElementById('count').textContent = 'Showing ' + rows.length + ' of ' + ROWS.length + ' cards on the radar';
   }
 
+  var GUIDE = [
+    { id: 'good', title: 'Good buy zone', sub: 'Buy at or under the recent middle price', items: [
+      { name: 'Charizard ex', card: 'Scarlet & Violet 151, Special Illustration Rare #199', tag: 'Raw: buy at or under about $350',
+        why: 'The last 5 sales ran $315 to $360, so the price is steady. PSA 10 is $1,392, about 4.1 times the raw price.',
+        watch: 'A PSA 9 sells for about $355, barely more than raw, so grading only pays if it comes back a 10.', q: 'charizard ex 199/165 151' },
+      { name: 'Charizard ex', card: 'Obsidian Flames, Special Illustration Rare #223', tag: 'Raw: buy at or under about $95',
+        why: 'Raw sells around $75 to $106 while PSA 10 is $726, about 7.6 times raw. That is the biggest gap in this guide.',
+        watch: 'A PSA 9 is only $125. I do not have the PSA 10 pass rate for this card, so check the PSA population report before you submit.', q: 'charizard ex 223/197 obsidian flames' },
+      { name: 'Umbreon ex', card: 'Prismatic Evolutions, Special Illustration Rare #161', tag: 'Raw: buy at or under about $1,160',
+        why: 'The last 7 sales ran $950 to $1,286. PSA 10 is $5,288, about 4.5 times the raw price.',
+        watch: 'PSA 10 slipped $337.50 from its prior price, and a PSA 9 sells for only about 6.5% more than raw.', q: 'umbreon ex 161/131 prismatic evolutions' }
+    ] },
+    { id: 'wait', title: 'Wait', sub: 'The price is swinging or falling, or grading does not pay', items: [
+      { name: 'Mega Gengar ex', card: 'Ascended Heroes, Special Illustration Rare #284', tag: 'Raw about $819',
+        why: 'Raw sales swung from $700 to $1,000 in the last week. PSA 10 sold for $4,785 on Feb 20 and $1,675 on Sep 29, down 65%.',
+        watch: 'Wait for the raw range to narrow before you buy.', q: 'mega gengar ex 284/217 ascended heroes' },
+      { name: 'Mega Dragonite ex', card: 'Ascended Heroes, Special Illustration Rare #290', tag: 'Raw about $500',
+        why: 'Raw is down $50 from its prior price, and PSA 10 is $973, only about 1.9 times raw.',
+        watch: 'PSA 9 copies sold for $435 and $482, below raw, so grading only pays on a 10.', q: 'mega dragonite ex 290/217 ascended heroes' },
+      { name: 'Pikachu ex', card: 'Surging Sparks, Special Illustration Rare #238', tag: 'Raw about $254',
+        why: 'Raw sales ran $157 to $285 in the last week, and PSA 10 is down $74 and only about 3.3 times raw.',
+        watch: 'PSA 9 is $252, below raw, so only a 10 pays.', q: 'pikachu ex 238/191 surging sparks' },
+      { name: 'Sylveon ex', card: 'Prismatic Evolutions, Special Illustration Rare #156', tag: 'Raw about $445',
+        why: 'Raw sales went from $350 on Sep 28 to $480 on Sep 30. A price that swings that much has not settled, and PSA 10 is only about 3 times raw.',
+        watch: 'PSA 9 is $416, below raw.', q: 'sylveon ex 156/131 prismatic evolutions' },
+      { name: 'Surging Sparks booster box', card: 'Sealed', tag: 'Now about $300',
+        why: 'Up about 25% from the $220 to $260 reported in May. A 2026 investing guide put the year-end target at $250 to $300, so it is already at the top of that.',
+        watch: 'One sale at $421 on Sep 29 is an outlier. Most sales are $290 to $300.', q: 'surging sparks booster box sealed' }
+    ] },
+    { id: 'thin', title: 'Careful', sub: 'Very few sales set the price', items: [
+      { name: 'Sceptile', card: 'POP Series 1 #4/17, PSA 10', tag: 'Reported PSA 10 $11,542',
+        why: 'Raw is $32.71, so the PSA 10 price is about 350 times raw. A +3,106% month on a card like this usually comes from one or two sales.',
+        watch: 'Check eBay sold for real PSA 10 sales before you trust this number. It comes from one price-tracking blog.', q: 'sceptile 4/17 pop series 1 psa 10' },
+      { name: 'Mudkip', card: 'Crystal Guardians #57/100, PSA 10', tag: 'Reported PSA 10 $21,000',
+        why: 'Raw is $82.16, so PSA 10 is about 256 times raw. Same pattern: very few graded sales set the price.',
+        watch: 'Same source and the same advice. Confirm it with sold listings.', q: 'mudkip 57/100 crystal guardians psa 10' }
+    ] }
+  ];
+  function renderGuide() {
+    document.getElementById('guide-cols').innerHTML = GUIDE.map(function (c) {
+      return '<div class="gcol ' + c.id + '"><h3><span class="gdot"></span>' + esc(c.title) + '</h3><p class="gsub">' + esc(c.sub) + '</p><ul>' +
+        c.items.map(function (i) {
+          var href = 'https://www.ebay.com/sch/i.html?_nkw=' + encodeURIComponent(i.q) + '&LH_Sold=1&LH_Complete=1';
+          return '<li class="gi"><div class="gi-top"><b>' + esc(i.name) + '</b><span class="gi-tag">' + esc(i.tag) + '</span></div>' +
+            '<span class="gi-card">' + esc(i.card) + '</span>' +
+            '<p class="gi-why">' + esc(i.why) + '</p>' +
+            '<p class="gi-watch">' + esc(i.watch) + '</p>' +
+            '<a class="sold" href="' + href + '" target="_blank" rel="noopener">Sold ↗</a></li>';
+        }).join('') + '</ul></div>';
+    }).join('');
+  }
+
   var lkQ = document.getElementById('lk-q');
   var lkSport = document.getElementById('lk-sport');
   var lkType = document.getElementById('lk-type');
@@ -528,6 +640,7 @@ a.sold:hover { text-decoration: underline; }
   lkType.addEventListener('change', updateLookup);
   updateLookup();
 
+  renderGuide();
   render();
 })();
 </script>
